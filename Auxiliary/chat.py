@@ -120,7 +120,8 @@ class Button:
             Message.userSendLogger(message_tg, f'[{self.text}]')
         if self.__func(self.to_messages, message_tg) is not None:
             return self.__func(self.to_messages, message_tg)
-        return self.to_messages[0]
+        if self.to_messages:
+            return self.to_messages[0]
 
     def __getattr__(self, callback_data):  # выполняем поиск кнопки по её скрытым данным, т.к они уникальные
         for instance in self.instances:
@@ -141,4 +142,27 @@ def clear_next_step_handler(_, message_tg):
 # Buttons
 button = Button('', '')
 
+Button("Новости", "news")
+Button("Конкурсы", "contests")
+
+Button("Прошедшие", "past_contests")
+Button("Идущие", "present_contests")
+Button("Грядущие", "future_contests")
+
+Button("🔙 Назад 🔙", "back_to_start")
+Button("✖️ Закрыть ✖️", "close", func=delete_message)
+
 # Messages
+message_contacts = Message("*Контакты:*\n"
+                           "Создатель -> @Sefixnep", ((button.close,),))
+
+message_start = Message("*ID:* `<ID>`\n"
+                        "_Привет, <USERNAME>!_", ((button.news, button.contests),),
+                        button.back_to_start)
+
+message_tense_contests = Message("Выбери с какими конкурсами желаешь ознакомиться:",
+                                 ((button.past_contests, button.present_contests, button.future_contests),
+                                  (button.back_to_start,)),
+                                 button.contests)
+
+message_news = Message("Выберите событие:", ((button.back_to_start,),), button.news)

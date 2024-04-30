@@ -3,7 +3,12 @@ from Auxiliary.chat import *
 
 @bot.message_handler(commands=["start"])
 def start(message_tg):
-    pass
+    message_start.new_line(message_tg)
+
+
+@bot.message_handler(commands=["contacts"])
+def contacts(message_tg):
+    message_contacts.new_line(message_tg)
 
 
 @bot.callback_query_handler(func=lambda call: True)
