@@ -39,6 +39,9 @@ def watch(message_tg):
 
 
 if __name__ == '__main__':
+    operation.Paths.DataBase = "Auxiliary/DataBase/DataBase.db"
+    operation.creating_tables()
+
     print(f"link: https://t.me/{config.Bot}")
     logger.info(f'{config.Bot} start')
 

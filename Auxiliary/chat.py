@@ -1,6 +1,7 @@
 import telebot
 from loguru import logger
 from Auxiliary import config
+from Auxiliary.DataBase import operations
 
 bot = telebot.TeleBot(config.BOT_TOKEN, parse_mode='html')
 

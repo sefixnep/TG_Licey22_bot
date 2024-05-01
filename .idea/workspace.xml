@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b83a32fe-ddd8-48e6-9a0c-8c0b30784b5d" name="Changes" comment="Base">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Auxiliary/chat.py" beforeDir="false" afterPath="$PROJECT_DIR$/Auxiliary/chat.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Auxiliary/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/Auxiliary/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-    </list>
+    <list default="true" id="b83a32fe-ddd8-48e6-9a0c-8c0b30784b5d" name="Changes" comment="Add structure layout&#10;Structure:&#10;    Contact&#10;    Start&#10;    ├ Tense contests&#10;    └ News" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -35,7 +30,8 @@
     "Python.main.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master"
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "C:/Users/Sefixnep/Programming/Projects/TG_Licey22_bot_old"
   }
 }]]></component>
   <component name="RunManager">
@@ -86,7 +82,15 @@
       <option name="project" value="LOCAL" />
       <updated>1714454531088</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Add structure layout&#10;Structure:&#10;    Contact&#10;    Start&#10;    ├ Tense contests&#10;    └ News">
+      <option name="closed" value="true" />
+      <created>1714456595681</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1714456595681</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -102,6 +106,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Base" />
-    <option name="LAST_COMMIT_MESSAGE" value="Base" />
+    <MESSAGE value="Add structure layout&#10;Structure:&#10;    Contact&#10;    Start&#10;    ├ Tense contests&#10;    └ News" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add structure layout&#10;Structure:&#10;    Contact&#10;    Start&#10;    ├ Tense contests&#10;    └ News" />
   </component>
 </project>
