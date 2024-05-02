@@ -4,19 +4,32 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b83a32fe-ddd8-48e6-9a0c-8c0b30784b5d" name="Changes" comment="Add structure layout&#10;Structure:&#10;    Contact&#10;    Start&#10;    ├ Tense contests&#10;    └ News" />
+    <list default="true" id="b83a32fe-ddd8-48e6-9a0c-8c0b30784b5d" name="Changes" comment="Add DataBase and few operations">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Auxiliary/DataBase/operations.py" beforeDir="false" afterPath="$PROJECT_DIR$/Auxiliary/DataBase/operations.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Auxiliary/chat.py" beforeDir="false" afterPath="$PROJECT_DIR$/Auxiliary/chat.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Auxiliary/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/Auxiliary/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "customColor": "",
-  "associatedIndex": 7
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 7
+}</component>
   <component name="ProjectId" id="2fo4s5sCve0woKXKLqy0Thd06X8" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="2" id="Add" />
@@ -27,9 +40,14 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Python.chat.executor": "Run",
+    "Python.command.executor": "Run",
     "Python.main.executor": "Run",
+    "Python.operation.executor": "Run",
+    "Python.operations.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "deletionFromPopupRequiresConfirmation": "false",
     "git-widget-placeholder": "master",
     "last_opened_file_path": "C:/Users/Sefixnep/Programming/Projects/TG_Licey22_bot_old"
   }
@@ -90,7 +108,15 @@
       <option name="project" value="LOCAL" />
       <updated>1714456595681</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Add DataBase and few operations">
+      <option name="closed" value="true" />
+      <created>1714551230540</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1714551230540</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -107,6 +133,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Base" />
     <MESSAGE value="Add structure layout&#10;Structure:&#10;    Contact&#10;    Start&#10;    ├ Tense contests&#10;    └ News" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add structure layout&#10;Structure:&#10;    Contact&#10;    Start&#10;    ├ Tense contests&#10;    └ News" />
+    <MESSAGE value="Add DataBase and few operations" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add DataBase and few operations" />
   </component>
 </project>

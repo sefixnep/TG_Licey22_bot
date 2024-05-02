@@ -1,4 +1,5 @@
 from Auxiliary.chat import *
+from threading import Thread
 
 
 @bot.message_handler(commands=["start"])
@@ -39,8 +40,9 @@ def watch(message_tg):
 
 
 if __name__ == '__main__':
-    operation.Paths.DataBase = "Auxiliary/DataBase/DataBase.db"
-    operation.creating_tables()
+    operations.Paths.DataBase = "Auxiliary/DataBase/DataBase.db"
+    operations.creating_tables()
+    Thread(name='Remove_old_contests', target=operations.remove_old_contests_thread, daemon=None).start()
 
     print(f"link: https://t.me/{config.Bot}")
     logger.info(f'{config.Bot} start')

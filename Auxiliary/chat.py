@@ -1,7 +1,7 @@
 import telebot
 from loguru import logger
-from Auxiliary import config
 from Auxiliary.DataBase import operations
+from Auxiliary import config
 
 bot = telebot.TeleBot(config.BOT_TOKEN, parse_mode='html')
 
@@ -39,7 +39,7 @@ class Message:
 
     @staticmethod
     def __trueText(text, message_tg):
-        return text.replace("<ID>", str(message_tg.chat.id)).replace("<USERNAME>", message_tg.chat.username)
+        return text.replace("<ID>", str(message_tg.chat.id)).replace("<USERNAME>", str(message_tg.chat.username))
 
     @staticmethod
     def userSendLogger(message_tg, text=None):
