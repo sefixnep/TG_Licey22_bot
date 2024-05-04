@@ -4,12 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b83a32fe-ddd8-48e6-9a0c-8c0b30784b5d" name="Changes" comment="Add DataBase and few operations">
+    <list default="true" id="b83a32fe-ddd8-48e6-9a0c-8c0b30784b5d" name="Changes" comment="Add:&#10;remove_old_contest with Thread&#10;function update the list by tense">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Auxiliary/DataBase/operations.py" beforeDir="false" afterPath="$PROJECT_DIR$/Auxiliary/DataBase/operations.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Auxiliary/chat.py" beforeDir="false" afterPath="$PROJECT_DIR$/Auxiliary/chat.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Auxiliary/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/Auxiliary/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,21 +35,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.chat.executor": "Run",
-    "Python.command.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.operation.executor": "Run",
-    "Python.operations.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "deletionFromPopupRequiresConfirmation": "false",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "C:/Users/Sefixnep/Programming/Projects/TG_Licey22_bot_old"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.chat.executor&quot;: &quot;Run&quot;,
+    &quot;Python.command.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.operation.executor&quot;: &quot;Run&quot;,
+    &quot;Python.operations.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;deletionFromPopupRequiresConfirmation&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Sefixnep/Programming/Projects/TG_Licey22_bot_old&quot;
   }
-}]]></component>
-  <component name="RunManager">
+}</component>
+  <component name="RunManager" selected="Python.operations">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="TG_Licey22_bot" />
       <option name="ENV_FILES" value="" />
@@ -75,6 +72,33 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="operations" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="TG_Licey22_bot" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Auxiliary/DataBase" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Auxiliary/DataBase/operations.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.operations" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -116,7 +140,15 @@
       <option name="project" value="LOCAL" />
       <updated>1714551230540</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Add:&#10;remove_old_contest with Thread&#10;function update the list by tense">
+      <option name="closed" value="true" />
+      <created>1714657226740</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1714657226740</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -134,6 +166,7 @@
     <MESSAGE value="Base" />
     <MESSAGE value="Add structure layout&#10;Structure:&#10;    Contact&#10;    Start&#10;    ├ Tense contests&#10;    └ News" />
     <MESSAGE value="Add DataBase and few operations" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add DataBase and few operations" />
+    <MESSAGE value="Add:&#10;remove_old_contest with Thread&#10;function update the list by tense" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add:&#10;remove_old_contest with Thread&#10;function update the list by tense" />
   </component>
 </project>

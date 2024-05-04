@@ -29,6 +29,14 @@ def creating_tables():
     );
     """)
 
+    # Создание таблицы "statuses", если она не существует
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS "statuses" (
+        "id" INTEGER NOT NULL PRIMARY KEY UNIQUE,
+        "status" TEXT NOT NULL
+    );
+    """)
+
     # Сохранение изменений
     connection.commit()
 
@@ -36,25 +44,55 @@ def creating_tables():
     connection.close()
 
 
-def record(name: str, date_start: str, date_end: str, tags: list, comment=None):
+# Contests
+def get_contest(id):
     # Подключение к базе данных
     connection = sqlite3.connect(Paths.DataBase)
     cursor = connection.cursor()
 
-    # Запись данных в таблицу "contests"
-    cursor.execute("""
-    INSERT INTO "contests" (
-      "name",
-      "date_start",
-      "date_end",
-      "tags",
-      "comment"
-    )
-    VALUES (?, ?, ?, ?, ?)
-    """, (name, date_start, date_end, json.dumps(tags), comment))
+    # Находим нужный конкурс по id
+    cursor.execute("SELECT * FROM contests WHERE id = ?", (id,))
 
-    # Сохранение изменений
-    connection.commit()
+    # Достаем данные из таблицы и преобразуем теги
+    contest = cursor.fetchone()
+    contest = contest[:4] + (json.loads(contest[4]),) + contest[5:]
+
+    # Закрытие соединения
+    connection.close()
+
+    return contest
+
+
+def record_contest(name: str, date_start: str, date_end: str, tags: list, comment=None):
+    # Преобразование данных в формат, подходящий для SQLite
+    # Тут должно быть преобразование любого формата даты в строку вида .strftime('%Y-%m-%d')
+    tags = json.dumps(tags)
+
+    # Подключение к базе данных
+    connection = sqlite3.connect(Paths.DataBase)
+    cursor = connection.cursor()
+
+    # Ищем такой-же конкурс
+    cursor.execute("SELECT id FROM contests WHERE "
+                   "name = ? AND "
+                   "date_start = ? AND "
+                   "date_end = ?", (name, date_start, date_end))
+
+    # Запись данных в таблицу contests если такого конкурса не было
+    if cursor.fetchone() is None:
+        cursor.execute("""
+            INSERT INTO "contests" (
+              "name",
+              "date_start",
+              "date_end",
+              "tags",
+              "comment"
+            )
+            VALUES (?, ?, ?, ?, ?)
+            """, (name, date_start, date_end, tags, comment))
+
+        # Сохранение изменений
+        connection.commit()
 
     # Закрытие соединения
     connection.close()
@@ -65,9 +103,9 @@ def remove_old_contests():
     connection = sqlite3.connect(Paths.DataBase)
     cursor = connection.cursor()
 
-    # Определение текущей даты и даты, от 30 дней назад
+    # Определение текущей даты и даты, от config.removal_day дней назад
     current_date = datetime.now()
-    thirty_days_ago = current_date - timedelta(days=30)
+    thirty_days_ago = current_date - timedelta(days=config.removal_day)
 
     # Преобразование дат в формат, подходящий для SQLite
     thirty_days_ago_str = thirty_days_ago.strftime('%Y-%m-%d')
@@ -133,6 +171,52 @@ def update(lst: list, tense):
                 temp.append(contests[i * config.shape[1] + j])
             page.append(temp)
         lst.append(page)
+
+
+# Statuses
+def get_status(chat_id: str):
+    # Подключение к базе данных
+    connection = sqlite3.connect(Paths.DataBase)
+    cursor = connection.cursor()
+
+    # Находим нужный статус по chat_id
+    cursor.execute("SELECT status FROM statuses WHERE id = ?", (chat_id,))
+
+    status = cursor.fetchone()
+
+    # Закрытие соединения
+    connection.close()
+
+    return status[0] if status is not None else None
+
+
+def assign_status(chat_id: str, status: str):
+    # Подключение к базе данных
+    connection = sqlite3.connect(Paths.DataBase)
+    cursor = connection.cursor()
+
+    # Получим нынешний статус
+    temp = get_status(chat_id)
+
+    # Запись данных в таблицу statuses
+    if temp is None and status:
+        cursor.execute("""
+        INSERT INTO "statuses" (
+          "id",
+          "status"
+        )
+        VALUES (?, ?)
+        """, (chat_id, status))
+    elif temp is not None and status:
+        cursor.execute("UPDATE statuses SET status = ? WHERE id = ?", (status, chat_id))
+    elif temp is not None and not status:
+        cursor.execute("DELETE FROM statuses WHERE id = ?", (chat_id,))
+
+    # Сохранение изменений
+    connection.commit()
+
+    # Закрытие соединения
+    connection.close()
 
 
 # for Thread
