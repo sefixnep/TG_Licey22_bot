@@ -5,7 +5,9 @@ from time import sleep
 from datetime import datetime, timedelta
 from math import ceil
 
-from Auxiliary import config
+from Auxiliary.chat import *
+
+contests = {'past': list(), 'present': list(), 'future': list()}
 
 
 class Paths:
@@ -55,7 +57,9 @@ def get_contest(id):
 
     # Достаем данные из таблицы и преобразуем теги
     contest = cursor.fetchone()
-    contest = contest[:4] + (json.loads(contest[4]),) + contest[5:]
+    contest = (contest[:config.contest_indices.index('tags')] +
+               (json.loads(contest[config.contest_indices.index('tags')]),) +
+               contest[config.contest_indices.index('tags') + 1:])
 
     # Закрытие соединения
     connection.close()
@@ -147,7 +151,9 @@ def contests_filter_tense(tense):
     records = cursor.fetchall()
 
     for i in range(len(records)):
-        records[i] = records[i][:4] + (json.loads(records[i][4]),) + records[i][5:]
+        records[i] = (records[i][:config.contest_indices.index('tags')] +
+                      (json.loads(records[i][config.contest_indices.index('tags')]),) +
+                      records[i][config.contest_indices.index('tags') + 1:])
 
     # Закрытие соединения с базой данных
     connection.close()
@@ -157,19 +163,28 @@ def contests_filter_tense(tense):
 
 def update(lst: list, tense):
     lst.clear()
-    contests = contests_filter_tense(tense)
-    for _ in range(ceil(len(contests) / (config.shape[0] * config.shape[1]))):
-        page = list()
+    contests_tense = contests_filter_tense(tense)
+    for _ in range(ceil(len(contests_tense) / (config.shape[0] * config.shape[1]))):
+        page = tuple()
         for i in range(config.shape[0]):
-            temp = list()
+            temp = tuple()
             for j in range(config.shape[1]):
-                if len(contests) == i * config.shape[1] + j:
+                if len(contests_tense) == i * config.shape[1] + j:
                     if j:
-                        page.append(temp)
+                        page += (temp,)
                         lst.append(page)
                     return None
-                temp.append(contests[i * config.shape[1] + j])
-            page.append(temp)
+
+                contest = contests_tense[i * config.shape[1] + j]
+                callback_data = f'{contest[config.contest_indices.index("id")]}_contest'
+
+                Button(contest[config.contest_indices.index('name')], callback_data)
+
+                Message(' '.join(map(str, contest)), ((getattr(button, f'back_to_{tense}_contests'),),),
+                        getattr(button, callback_data))
+
+                temp += (getattr(button, callback_data),)
+            page += (temp,)
         lst.append(page)
 
 
@@ -220,8 +235,11 @@ def assign_status(chat_id: str, status: str):
 
 
 # for Thread
-def remove_old_contests_thread():
+def daily_operations():
     while True:
         remove_old_contests()
+
+        for tense, lst in contests.items():
+            update(lst, tense)
 
         sleep(60 * 60 * 24)

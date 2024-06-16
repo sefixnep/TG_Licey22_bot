@@ -1,4 +1,6 @@
 from Auxiliary.chat import *
+from Auxiliary.DataBase import operations
+from Auxiliary.DataBase.operations import contests
 from threading import Thread
 
 
@@ -14,7 +16,7 @@ def contacts(message_tg):
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_reception(call):
-    commands = []
+    commands = ['contests']
 
     to_message = None
     from_button = getattr(button, call.data)
@@ -23,8 +25,14 @@ def callback_reception(call):
         to_message = getattr(button, call.data)(call.message)
 
     for command in commands:
-        if call.data.split(split)[-1] == command:
-            command_data = call.data.split(split)[:-1]  # Данные передавающиеся кнопкой
+        if call.data.split('_')[-1] == command:
+            command_data = call.data.split('_')[:-1]  # Данные передавающиеся кнопкой
+            if command == 'contests':
+                # ! sketch
+                tense = command_data[-1]
+                (Message("Выбери конкурс:",(*contests[tense][0], (button.back_to_contests_tense,),))
+                 .old_line(call.message))
+
             break
     else:
         if to_message is not None and to_message(
@@ -42,7 +50,7 @@ def watch(message_tg):
 if __name__ == '__main__':
     operations.Paths.DataBase = "Auxiliary/DataBase/DataBase.db"
     operations.creating_tables()
-    Thread(name='Remove_old_contests', target=operations.remove_old_contests_thread, daemon=None).start()
+    Thread(name='Remove_old_contests', target=operations.daily_operations, daemon=None).start()
 
     print(f"link: https://t.me/{config.Bot}")
     logger.info(f'{config.Bot} start')

@@ -1,14 +1,14 @@
 import telebot
 from loguru import logger
-from Auxiliary.DataBase import operations
 from Auxiliary import config
 
 bot = telebot.TeleBot(config.BOT_TOKEN, parse_mode='html')
 
 
 class Message:
-    def __init__(self, text: str, buttons=None, *from_buttons, func=lambda *args: None):
+    def __init__(self, text: str, buttons=None, *from_buttons, photo=None, func=lambda *args: None):
         self.__text = text  # Текст сообщения
+        self.__photo = photo
         self.__buttons = buttons  # Двумерный кортеж с кнопками в виде InlineKeyboardButton
         self.__board_tg = None  # Клавиатура кнопок под сообщением: InlineKeyboardMarkup
         if buttons:
@@ -28,13 +28,20 @@ class Message:
     def new_line(self, message_tg, delete_message=True, userSendLogger=True):
         if userSendLogger:
             self.userSendLogger(message_tg)
+        botMessage = self.__botSendMessage(message_tg)
         if delete_message:
-            bot.delete_message(message_tg.chat.id, message_tg.id)
-        return self.__botSendMessage(message_tg)
+            try:
+                bot.delete_message(message_tg.chat.id, message_tg.id)
+            except:
+                pass
+
+        return botMessage
 
     def old_line(self, message_tg, text=None, userSendLogger=False):
         if userSendLogger:
             self.userSendLogger(message_tg, text)
+        if self.__photo is not None:
+            return self.new_line(message_tg)
         return self.__botEditMessage(message_tg)
 
     @staticmethod
@@ -56,8 +63,12 @@ class Message:
 
     def __botSendMessage(self, message_tg, parse_mode='MARKDOWN', indent=3):
         text = self.__trueText(self.__text, message_tg)
-        botMessage = bot.send_message(chat_id=message_tg.chat.id, text=text, reply_markup=self.__board_tg,
-                                      parse_mode=parse_mode)
+        botMessage = bot.send_message(chat_id=message_tg.chat.id, text=text,
+                                      reply_markup=self.__board_tg, parse_mode=parse_mode) \
+            if self.__photo is None else bot.send_photo(
+            chat_id=message_tg.chat.id, photo=self.__photo, caption=text,
+            reply_markup=self.__board_tg, parse_mode=parse_mode)
+
         if self.__board_tg is None:
             if '\n' in text:
                 logger.info(f"{config.Bot} ({botMessage.chat.username}, {message_tg.chat.id}):\n{text}\n")
@@ -79,9 +90,18 @@ class Message:
 
     def __botEditMessage(self, message_tg, parse_mode='MARKDOWN', indent=3):
         text = self.__trueText(self.__text, message_tg)
-        botMessage = bot.edit_message_text(chat_id=message_tg.chat.id, message_id=message_tg.id, text=text,
-                                           reply_markup=self.__board_tg,
-                                           parse_mode=parse_mode)
+        try:
+            botMessage = bot.edit_message_text(chat_id=message_tg.chat.id, message_id=message_tg.id, text=text,
+                                               reply_markup=self.__board_tg,
+                                               parse_mode=parse_mode)
+        except:
+            botMessage = bot.send_message(chat_id=message_tg.chat.id, text=text,
+                                          reply_markup=self.__board_tg, parse_mode=parse_mode)
+            try:
+                bot.delete_message(chat_id=message_tg.chat.id, message_id=message_tg.id)
+            except:
+                pass
+
         if self.__board_tg is None:
             if '\n' in text:
                 logger.info(f"{config.Bot} ({botMessage.chat.username}, {message_tg.chat.id}):\n{text}\n")
@@ -144,13 +164,21 @@ def clear_next_step_handler(_, message_tg):
 button = Button('', '')
 
 Button("Новости", "news")
-Button("Конкурсы", "contests")
+Button("Конкурсы", "contests_tense")
 
 Button("Прошедшие", "past_contests")
 Button("Идущие", "present_contests")
 Button("Грядущие", "future_contests")
 
 Button("🔙 Назад 🔙", "back_to_start")
+
+Button("🔙 Назад 🔙", "back_to_contests_tense")
+
+Button("🔙 Назад 🔙", "back_to_past_contests")
+Button("🔙 Назад 🔙", "back_to_present_contests")
+Button("🔙 Назад 🔙", "back_to_future_contests")
+
+
 Button("✖️ Закрыть ✖️", "close", func=delete_message)
 
 # Messages
@@ -158,12 +186,12 @@ message_contacts = Message("*Контакты:*\n"
                            "Создатель -> @Sefixnep", ((button.close,),))
 
 message_start = Message("*ID:* `<ID>`\n"
-                        "_Привет, <USERNAME>!_", ((button.news, button.contests),),
+                        "_Привет, <USERNAME>!_", ((button.news, button.contests_tense),),
                         button.back_to_start)
 
 message_tense_contests = Message("Выбери с какими конкурсами желаешь ознакомиться:",
                                  ((button.past_contests, button.present_contests, button.future_contests),
                                   (button.back_to_start,)),
-                                 button.contests)
+                                 button.contests_tense, button.back_to_contests_tense)
 
 message_news = Message("Выберите событие:", ((button.back_to_start,),), button.news)
