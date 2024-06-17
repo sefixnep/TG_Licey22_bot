@@ -4,8 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b83a32fe-ddd8-48e6-9a0c-8c0b30784b5d" name="Changes" comment="Add statuses for users&#10;Checking for contest before creating&#10;Fix few mistakes">
-      <change afterPath="$PROJECT_DIR$/Auxiliary/DataBase/control.py" afterDir="false" />
+    <list default="true" id="b83a32fe-ddd8-48e6-9a0c-8c0b30784b5d" name="Changes" comment="Add contests system&#10;Add opportunity photo in Message&#10;Fix few mistakes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Auxiliary/DataBase/operations.py" beforeDir="false" afterPath="$PROJECT_DIR$/Auxiliary/DataBase/operations.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Auxiliary/chat.py" beforeDir="false" afterPath="$PROJECT_DIR$/Auxiliary/chat.py" afterDir="false" />
@@ -26,6 +25,8 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="HARD" />
+    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -53,22 +54,22 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.chat.executor": "Run",
-    "Python.command.executor": "Run",
-    "Python.control.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.operation.executor": "Run",
-    "Python.operations.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "deletionFromPopupRequiresConfirmation": "false",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "C:/Users/Sefixnep/Programming/Projects/TG_Licey22_bot_old",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.chat.executor&quot;: &quot;Run&quot;,
+    &quot;Python.command.executor&quot;: &quot;Run&quot;,
+    &quot;Python.control.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.operation.executor&quot;: &quot;Run&quot;,
+    &quot;Python.operations.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;deletionFromPopupRequiresConfirmation&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;4600bc2d&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Sefixnep/Programming/Projects/TG_Licey22_bot_old&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="Python.main">
     <configuration name="control" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="TG_Licey22_bot" />

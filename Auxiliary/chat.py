@@ -46,7 +46,8 @@ class Message:
 
     @staticmethod
     def __trueText(text, message_tg):
-        return text.replace("<ID>", str(message_tg.chat.id)).replace("<USERNAME>", str(message_tg.chat.username))
+        return (text.replace("<ID>", str(message_tg.chat.id))
+                .replace("<USERNAME>", str(message_tg.chat.username if message_tg.chat.username else "User")))
 
     @staticmethod
     def userSendLogger(message_tg, text=None):
@@ -133,6 +134,9 @@ class Button:
             self.text, callback_data=self.callback_data)  # кнопка в виде объекта InlineKeyboardButton
         self.to_messages = to_messages  # Сообщения, к которым ведёт кнопка
         self.__func = func  # Функция отбора сообщения из to_messages на основе предыдущего сообщения / вспомогательное
+
+        if self.__getattr__(callback_data) is not None:
+            self.instances.remove(self.__getattr__(callback_data))
         self.instances.append(self)
 
     def __call__(self, message_tg,
@@ -171,13 +175,7 @@ Button("Идущие", "present_contests")
 Button("Грядущие", "future_contests")
 
 Button("🔙 Назад 🔙", "back_to_start")
-
 Button("🔙 Назад 🔙", "back_to_contests_tense")
-
-Button("🔙 Назад 🔙", "back_to_past_contests")
-Button("🔙 Назад 🔙", "back_to_present_contests")
-Button("🔙 Назад 🔙", "back_to_future_contests")
-
 
 Button("✖️ Закрыть ✖️", "close", func=delete_message)
 

@@ -164,27 +164,47 @@ def contests_filter_tense(tense):
 def update(lst: list, tense):
     lst.clear()
     contests_tense = contests_filter_tense(tense)
-    for _ in range(ceil(len(contests_tense) / (config.shape[0] * config.shape[1]))):
+    amount_pages = ceil(len(contests_tense) / (config.shape[0] * config.shape[1]))
+
+    def leafing(count):
+        if amount_pages == 1:
+            return ((button.back_to_contests_tense,),)
+        elif amount_pages > 1 and count == 0:
+            return ((button.back_to_contests_tense,
+                     Button(" >> ", f"right_{tense}_{count + 1}_contests")),)
+        elif amount_pages > 1 and count == amount_pages - 1:
+            return ((Button(" << ", f"left_{tense}_{count - 1}_contests"),
+                     button.back_to_contests_tense,),)
+        else:
+            return ((Button(" << ", f"left_{tense}_{count - 1}_contests"),
+                     button.back_to_contests_tense,
+                     Button(" >> ", f"right_{tense}_{count + 1}_contests")),)
+
+    for i in range(amount_pages):
+        Button("🔙 Назад 🔙", f'back_to_{tense}_{len(lst)}_contests')
         page = tuple()
-        for i in range(config.shape[0]):
-            temp = tuple()
-            for j in range(config.shape[1]):
-                if len(contests_tense) == i * config.shape[1] + j:
-                    if j:
-                        page += (temp,)
+        for j in range(config.shape[0]):
+            line = tuple()
+            for n in range(config.shape[1]):
+                if len(contests_tense) == i * config.shape[0] * config.shape[1] + j * config.shape[1] + n:
+                    if j + n:
+                        if n:
+                            page += (line,)
+                        page += leafing(i)
                         lst.append(page)
                     return None
 
-                contest = contests_tense[i * config.shape[1] + j]
+                contest = contests_tense[i * config.shape[0] * config.shape[1] + j * config.shape[1] + n]
                 callback_data = f'{contest[config.contest_indices.index("id")]}_contest'
 
                 Button(contest[config.contest_indices.index('name')], callback_data)
-
-                Message(' '.join(map(str, contest)), ((getattr(button, f'back_to_{tense}_contests'),),),
+                Message(' '.join(map(str, contest)), ((getattr(button, f'back_to_{tense}_{len(lst)}_contests'),),),
                         getattr(button, callback_data))
 
-                temp += (getattr(button, callback_data),)
-            page += (temp,)
+                line += (getattr(button, callback_data),)
+            page += (line,)
+
+        page += leafing(i)
         lst.append(page)
 
 

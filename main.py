@@ -28,10 +28,16 @@ def callback_reception(call):
         if call.data.split('_')[-1] == command:
             command_data = call.data.split('_')[:-1]  # Данные передавающиеся кнопкой
             if command == 'contests':
-                # ! sketch
-                tense = command_data[-1]
-                (Message("Выбери конкурс:",(*contests[tense][0], (button.back_to_contests_tense,),))
-                 .old_line(call.message))
+                if command_data[:2] == ['back', 'to'] or command_data[0] in ('left', 'right'):
+                    # back to / {direction} {tense} {page}
+                    (Message("Выбери конкурс:", contests[command_data[-2]][int(command_data[-1])],)
+                     .old_line(call.message))
+                elif command_data[0] in contests and len(command_data) == 1:
+                    # {id} contest
+                    page = tuple()
+                    if contests[command_data[0]]:
+                        page = contests[command_data[0]][0]
+                    Message("Выбери конкурс:", page).old_line(call.message)
 
             break
     else:
@@ -50,7 +56,7 @@ def watch(message_tg):
 if __name__ == '__main__':
     operations.Paths.DataBase = "Auxiliary/DataBase/DataBase.db"
     operations.creating_tables()
-    Thread(name='Remove_old_contests', target=operations.daily_operations, daemon=None).start()
+    Thread(name='Daily_operations', target=operations.daily_operations, daemon=None).start()
 
     print(f"link: https://t.me/{config.Bot}")
     logger.info(f'{config.Bot} start')
