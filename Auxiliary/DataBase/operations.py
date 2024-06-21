@@ -26,6 +26,7 @@ def creating_tables():
       "name" VARCHAR(255) NOT NULL,
       "date_start" DATETIME NOT NULL,
       "date_end" DATETIME NOT NULL,
+      "link" TEXT NOT NULL,
       "tags" JSON NOT NULL,
       "comment" TEXT
     );
@@ -67,10 +68,10 @@ def get_contest(id):
     return contest
 
 
-def record_contest(name: str, date_start: str, date_end: str, tags: list, comment=None):
+def record_contest(name: str, date_start: str, date_end: str, link: str, tags: list, comment=None):
     # Преобразование данных в формат, подходящий для SQLite
     # Тут должно быть преобразование любого формата даты в строку вида .strftime('%Y-%m-%d')
-    tags = json.dumps(tags)
+    tags = json.dumps(list(map(str.lower, tags)))
 
     # Подключение к базе данных
     connection = sqlite3.connect(Paths.DataBase)
@@ -89,11 +90,12 @@ def record_contest(name: str, date_start: str, date_end: str, tags: list, commen
               "name",
               "date_start",
               "date_end",
+              "link",
               "tags",
               "comment"
             )
-            VALUES (?, ?, ?, ?, ?)
-            """, (name, date_start, date_end, tags, comment))
+            VALUES (?, ?, ?, ?, ?, ?)
+            """, (name, date_start, date_end, link, tags, comment))
 
         # Сохранение изменений
         connection.commit()
@@ -138,11 +140,12 @@ def contests_filter_tense(tense):
     if tense == 'all':
         query = "SELECT * FROM contests"
     elif tense == 'past':
-        query = "SELECT * FROM contests WHERE date_end < CURRENT_TIMESTAMP"
+        query = "SELECT * FROM contests WHERE date_end < CURRENT_TIMESTAMP ORDER BY date_start DESC"
     elif tense == 'present':
-        query = "SELECT * FROM contests WHERE date_start < CURRENT_TIMESTAMP AND CURRENT_TIMESTAMP < date_end"
+        query = ("SELECT * FROM contests WHERE date_start < CURRENT_TIMESTAMP AND CURRENT_TIMESTAMP < date_end "
+                 "ORDER BY date_start ASC")
     elif tense == 'future':
-        query = "SELECT * FROM contests WHERE CURRENT_TIMESTAMP < date_start"
+        query = "SELECT * FROM contests WHERE CURRENT_TIMESTAMP < date_start ORDER BY date_start ASC"
 
     assert query is not None, "tense must be past/present/future"
 
@@ -165,6 +168,10 @@ def update(lst: list, tense):
     lst.clear()
     contests_tense = contests_filter_tense(tense)
     amount_pages = ceil(len(contests_tense) / (config.shape[0] * config.shape[1]))
+
+    if amount_pages == 0:
+        lst.append(((button.back_to_contests_tense,),))
+        return None
 
     def leafing(count):
         if amount_pages == 1:
@@ -197,8 +204,17 @@ def update(lst: list, tense):
                 contest = contests_tense[i * config.shape[0] * config.shape[1] + j * config.shape[1] + n]
                 callback_data = f'{contest[config.contest_indices.index("id")]}_contest'
 
+                dates = [datetime.strptime(contest[config.contest_indices.index(mode)], "%Y-%m-%d")
+                              .strftime("%d.%m.%Y") for mode in ("date_start", "date_end")]
+                comment = contest[config.contest_indices.index('comment')]
+
                 Button(contest[config.contest_indices.index('name')], callback_data)
-                Message(' '.join(map(str, contest)), ((getattr(button, f'back_to_{tense}_{len(lst)}_contests'),),),
+                Message(f"*Конкурс*: `{contest[config.contest_indices.index('name')]}`\n"
+                        f"├ *Дата проведения*: `{' - '.join(dates)}`\n"
+                        f"└ *Предметы*: `{', '.join(contest[config.contest_indices.index('tags')])}`\n" +
+                        (f"\n_Примечание: {comment}_" if comment else ""),
+                        ((Button("Перейти", contest[config.contest_indices.index('link')], is_link=True),),
+                         (getattr(button, f'back_to_{tense}_{len(lst)}_contests'),),),
                         getattr(button, callback_data))
 
                 line += (getattr(button, callback_data),)

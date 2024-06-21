@@ -25,11 +25,11 @@ class Message:
     def __getitem__(self, item):
         return self.__buttons[item[0]][item[1]]
 
-    def new_line(self, message_tg, delete_message=True, userSendLogger=True):
+    def new_line(self, message_tg, deleting_message=True, userSendLogger=True):
         if userSendLogger:
             self.userSendLogger(message_tg)
         botMessage = self.__botSendMessage(message_tg)
-        if delete_message:
+        if deleting_message:
             try:
                 bot.delete_message(message_tg.chat.id, message_tg.id)
             except:
@@ -126,18 +126,23 @@ class Message:
 class Button:
     instances = list()  # Список со всеми объектами класса
 
-    def __init__(self, text: str, callback_data: str, *to_messages: Message,
+    def __init__(self, text: str, data: str, *to_messages: Message, is_link=False,
                  func=lambda to_messages, message_tg: None):
         self.text = text  # текст кнопки
-        self.callback_data = callback_data  # Скрытые (уникальные) данные, несущиеся кнопкой
-        self.button_tg = telebot.types.InlineKeyboardButton(
-            self.text, callback_data=self.callback_data)  # кнопка в виде объекта InlineKeyboardButton
-        self.to_messages = to_messages  # Сообщения, к которым ведёт кнопка
-        self.__func = func  # Функция отбора сообщения из to_messages на основе предыдущего сообщения / вспомогательное
+        if is_link:  # Если кнопка - ссылка
+            self.button_tg = telebot.types.InlineKeyboardButton(
+                self.text, url=data)  # кнопка в виде объекта InlineKeyboardButton
+        else:
+            self.callback_data = data  # Скрытые (уникальные) данные, несущиеся кнопкой
+            self.button_tg = telebot.types.InlineKeyboardButton(
+                self.text, callback_data=self.callback_data)  # кнопка в виде объекта InlineKeyboardButton
+            self.to_messages = to_messages  # Сообщения, к которым ведёт кнопка
+            self.__func = func  # Функция отбора сообщения из to_messages на основе предыдущего сообщения /
+            # вспомогательное
 
-        if self.__getattr__(callback_data) is not None:
-            self.instances.remove(self.__getattr__(callback_data))
-        self.instances.append(self)
+            if self.__getattr__(data) is not None:
+                self.instances.remove(self.__getattr__(data))
+            self.instances.append(self)
 
     def __call__(self, message_tg,
                  userSendLogger=True) -> Message:  # При вызове кновки отдаем сообщение к которому будем идти
