@@ -29,11 +29,11 @@ def callback_reception(call):
             command_data = call.data.split('_')[:-1]  # Данные передавающиеся кнопкой
             if command == 'contests':
                 if command_data[:2] == ['back', 'to'] or command_data[0] in ('left', 'right'):
-                    # back to / {direction} {tense} {page}
+                    # (back to / {direction}) {tense} {page}
                     (Message("Выбери конкурс:", contests[command_data[-2]][int(command_data[-1])],)
                      .old_line(call.message))
                 elif command_data[0] in contests and len(command_data) == 1:
-                    # {id} contest
+                    # {tense}
                     page = tuple()
                     if contests[command_data[0]]:
                         page = contests[command_data[0]][0]

@@ -3,6 +3,7 @@ import sqlite3
 
 from time import sleep
 from datetime import datetime, timedelta
+from dateutil import parser
 from math import ceil
 
 from Auxiliary.chat import *
@@ -70,7 +71,10 @@ def get_contest(id):
 
 def record_contest(name: str, date_start: str, date_end: str, link: str, tags: list, comment=None):
     # Преобразование данных в формат, подходящий для SQLite
-    # Тут должно быть преобразование любого формата даты в строку вида .strftime('%Y-%m-%d')
+    date_start, date_end = (parser.parse(date).strftime('%Y-%m-%d') for date in (date_start, date_end))
+    assert datetime.strptime(date_start, '%Y-%m-%d') < datetime.strptime(date_end, '%Y-%m-%d'), \
+        "Дата начала должна быть раньше даты конца"
+
     tags = json.dumps(list(map(str.lower, tags)))
 
     # Подключение к базе данных
@@ -138,16 +142,16 @@ def contests_filter_tense(tense):
     query = None
 
     if tense == 'all':
-        query = "SELECT * FROM contests"
+        query = "SELECT * FROM contests ORDER BY date_start ASC"
     elif tense == 'past':
-        query = "SELECT * FROM contests WHERE date_end < CURRENT_TIMESTAMP ORDER BY date_start DESC"
+        query = "SELECT * FROM contests WHERE date_end < CURRENT_TIMESTAMP ORDER BY date_end DESC"
     elif tense == 'present':
         query = ("SELECT * FROM contests WHERE date_start < CURRENT_TIMESTAMP AND CURRENT_TIMESTAMP < date_end "
                  "ORDER BY date_start ASC")
     elif tense == 'future':
         query = "SELECT * FROM contests WHERE CURRENT_TIMESTAMP < date_start ORDER BY date_start ASC"
 
-    assert query is not None, "tense must be past/present/future"
+    assert query is not None, "tense must be all/past/present/future"
 
     # Выполнение запроса и получение результатов
     cursor.execute(query)
@@ -167,45 +171,46 @@ def contests_filter_tense(tense):
 def update(lst: list, tense):
     lst.clear()
     contests_tense = contests_filter_tense(tense)
-    amount_pages = ceil(len(contests_tense) / (config.shape[0] * config.shape[1]))
+    amount_pages = ceil(len(contests_tense) / (config.page_shape_contests[0] * config.page_shape_contests[1]))
 
     if amount_pages == 0:
         lst.append(((button.back_to_contests_tense,),))
         return None
 
-    def leafing(count):
+    def leafing(number):
         if amount_pages == 1:
             return ((button.back_to_contests_tense,),)
-        elif amount_pages > 1 and count == 0:
+        elif amount_pages > 1 and number == 0:
             return ((button.back_to_contests_tense,
-                     Button(" >> ", f"right_{tense}_{count + 1}_contests")),)
-        elif amount_pages > 1 and count == amount_pages - 1:
-            return ((Button(" << ", f"left_{tense}_{count - 1}_contests"),
+                     Button(" >> ", f"right_{tense}_{number + 1}_contests")),)
+        elif amount_pages > 1 and number == amount_pages - 1:
+            return ((Button(" << ", f"left_{tense}_{number - 1}_contests"),
                      button.back_to_contests_tense,),)
         else:
-            return ((Button(" << ", f"left_{tense}_{count - 1}_contests"),
+            return ((Button(" << ", f"left_{tense}_{number - 1}_contests"),
                      button.back_to_contests_tense,
-                     Button(" >> ", f"right_{tense}_{count + 1}_contests")),)
+                     Button(" >> ", f"right_{tense}_{number + 1}_contests")),)
 
-    for i in range(amount_pages):
-        Button("🔙 Назад 🔙", f'back_to_{tense}_{len(lst)}_contests')
+    for page_number in range(amount_pages):
+        Button("🔙 Назад 🔙", f'back_to_{tense}_{page_number}_contests')
         page = tuple()
-        for j in range(config.shape[0]):
+        for i in range(config.page_shape_contests[0]):
             line = tuple()
-            for n in range(config.shape[1]):
-                if len(contests_tense) == i * config.shape[0] * config.shape[1] + j * config.shape[1] + n:
-                    if j + n:
-                        if n:
-                            page += (line,)
-                        page += leafing(i)
-                        lst.append(page)
+            for j in range(config.page_shape_contests[1]):
+                count = (page_number * config.page_shape_contests[0] * config.page_shape_contests[1] + i *
+                         config.page_shape_contests[1] + j)
+                if len(contests_tense) == count:  # Если все конкурсы размещены
+                    if j:  # Если на строчке есть конкурсы
+                        page += (line,)
+                    page += leafing(page_number)
+                    lst.append(page)
                     return None
 
-                contest = contests_tense[i * config.shape[0] * config.shape[1] + j * config.shape[1] + n]
+                contest = contests_tense[count]
                 callback_data = f'{contest[config.contest_indices.index("id")]}_contest'
 
                 dates = [datetime.strptime(contest[config.contest_indices.index(mode)], "%Y-%m-%d")
-                              .strftime("%d.%m.%Y") for mode in ("date_start", "date_end")]
+                         .strftime("%d.%m.%Y") for mode in ("date_start", "date_end")]
                 comment = contest[config.contest_indices.index('comment')]
 
                 Button(contest[config.contest_indices.index('name')], callback_data)
@@ -220,7 +225,7 @@ def update(lst: list, tense):
                 line += (getattr(button, callback_data),)
             page += (line,)
 
-        page += leafing(i)
+        page += leafing(page_number)
         lst.append(page)
 
 
