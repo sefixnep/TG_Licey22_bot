@@ -1,14 +1,10 @@
+from datetime import datetime, timedelta
+from Auxiliary import config
+from dateutil import parser
+
 import json
 import sqlite3
-
-from time import sleep
-from datetime import datetime, timedelta
-from dateutil import parser
-from math import ceil
-
-from Auxiliary.chat import *
-
-contests = {'past': list(), 'present': list(), 'future': list()}
+import telebot.types
 
 
 class Paths:
@@ -33,11 +29,13 @@ def creating_tables():
     );
     """)
 
-    # Создание таблицы "statuses", если она не существует
+    # Создание таблицы "users", если она не существует
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS "statuses" (
-        "id" INTEGER NOT NULL PRIMARY KEY UNIQUE,
-        "status" TEXT NOT NULL
+    CREATE TABLE IF NOT EXISTS "users" (
+        "id" TEXT NOT NULL UNIQUE,
+        "username" TEXT,
+        "status" TEXT NOT NULL,
+        PRIMARY KEY("id")
     );
     """)
 
@@ -49,7 +47,7 @@ def creating_tables():
 
 
 # Contests
-def get_contest(id):
+def get_contest(id: str):
     # Подключение к базе данных
     connection = sqlite3.connect(Paths.DataBase)
     cursor = connection.cursor()
@@ -59,9 +57,9 @@ def get_contest(id):
 
     # Достаем данные из таблицы и преобразуем теги
     contest = cursor.fetchone()
-    contest = (contest[:config.contest_indices.index('tags')] +
-               (json.loads(contest[config.contest_indices.index('tags')]),) +
-               contest[config.contest_indices.index('tags') + 1:])
+    contest = ((contest[:config.contest_indices.index('tags')] +
+                (json.loads(contest[config.contest_indices.index('tags')]),) +
+                contest[config.contest_indices.index('tags') + 1:])) if contest is not None else None
 
     # Закрытие соединения
     connection.close()
@@ -73,7 +71,7 @@ def record_contest(name: str, date_start: str, date_end: str, link: str, tags: l
     # Преобразование данных в формат, подходящий для SQLite
     date_start, date_end = (parser.parse(date).strftime('%Y-%m-%d') for date in (date_start, date_end))
     assert datetime.strptime(date_start, '%Y-%m-%d') < datetime.strptime(date_end, '%Y-%m-%d'), \
-        "Дата начала должна быть раньше даты конца"
+        "date_start must be before date_end"
 
     tags = json.dumps(list(map(str.lower, tags)))
 
@@ -108,6 +106,24 @@ def record_contest(name: str, date_start: str, date_end: str, link: str, tags: l
     connection.close()
 
 
+def remove_contests(id: str):
+    # Подключение к базе данных
+    connection = sqlite3.connect(Paths.DataBase)
+    cursor = connection.cursor()
+
+    # Выполнение запроса к базе данных
+    cursor.execute("""
+        DELETE FROM contests 
+        WHERE id = ?;
+    """, (id,))
+
+    # Сохранение изменений
+    connection.commit()
+
+    # Закрытие соединения
+    connection.close()
+
+
 def remove_old_contests():
     # Подключение к базе данных
     connection = sqlite3.connect(Paths.DataBase)
@@ -133,7 +149,7 @@ def remove_old_contests():
     connection.close()
 
 
-def contests_filter_tense(tense):
+def contests_filter_tense(tense: str):
     # Подключение к базе данных
     connection = sqlite3.connect(Paths.DataBase)
     cursor = connection.cursor()
@@ -168,75 +184,14 @@ def contests_filter_tense(tense):
     return records
 
 
-def update(lst: list, tense):
-    lst.clear()
-    contests_tense = contests_filter_tense(tense)
-    amount_pages = ceil(len(contests_tense) / (config.page_shape_contests[0] * config.page_shape_contests[1]))
-
-    if amount_pages == 0:
-        lst.append(((button.back_to_contests_tense,),))
-        return None
-
-    def leafing(number):
-        if amount_pages == 1:
-            return ((button.back_to_contests_tense,),)
-        elif amount_pages > 1 and number == 0:
-            return ((button.back_to_contests_tense,
-                     Button(" >> ", f"right_{tense}_{number + 1}_contests")),)
-        elif amount_pages > 1 and number == amount_pages - 1:
-            return ((Button(" << ", f"left_{tense}_{number - 1}_contests"),
-                     button.back_to_contests_tense,),)
-        else:
-            return ((Button(" << ", f"left_{tense}_{number - 1}_contests"),
-                     button.back_to_contests_tense,
-                     Button(" >> ", f"right_{tense}_{number + 1}_contests")),)
-
-    for page_number in range(amount_pages):
-        Button("🔙 Назад 🔙", f'back_to_{tense}_{page_number}_contests')
-        page = tuple()
-        for i in range(config.page_shape_contests[0]):
-            line = tuple()
-            for j in range(config.page_shape_contests[1]):
-                count = (page_number * config.page_shape_contests[0] * config.page_shape_contests[1] + i *
-                         config.page_shape_contests[1] + j)
-                if len(contests_tense) == count:  # Если все конкурсы размещены
-                    if j:  # Если на строчке есть конкурсы
-                        page += (line,)
-                    page += leafing(page_number)
-                    lst.append(page)
-                    return None
-
-                contest = contests_tense[count]
-                callback_data = f'{contest[config.contest_indices.index("id")]}_contest'
-
-                dates = [datetime.strptime(contest[config.contest_indices.index(mode)], "%Y-%m-%d")
-                         .strftime("%d.%m.%Y") for mode in ("date_start", "date_end")]
-                comment = contest[config.contest_indices.index('comment')]
-
-                Button(contest[config.contest_indices.index('name')], callback_data)
-                Message(f"*Конкурс*: `{contest[config.contest_indices.index('name')]}`\n"
-                        f"├ *Дата проведения*: `{' - '.join(dates)}`\n"
-                        f"└ *Предметы*: `{', '.join(contest[config.contest_indices.index('tags')])}`\n" +
-                        (f"\n_Примечание: {comment}_" if comment else ""),
-                        ((Button("Перейти", contest[config.contest_indices.index('link')], is_link=True),),
-                         (getattr(button, f'back_to_{tense}_{len(lst)}_contests'),),),
-                        getattr(button, callback_data))
-
-                line += (getattr(button, callback_data),)
-            page += (line,)
-
-        page += leafing(page_number)
-        lst.append(page)
-
-
-# Statuses
-def get_status(chat_id: str):
+# Users
+def get_user(chat_id: str):
     # Подключение к базе данных
     connection = sqlite3.connect(Paths.DataBase)
     cursor = connection.cursor()
 
     # Находим нужный статус по chat_id
-    cursor.execute("SELECT status FROM statuses WHERE id = ?", (chat_id,))
+    cursor.execute("SELECT status FROM users WHERE id = ?", (chat_id,))
 
     status = cursor.fetchone()
 
@@ -246,41 +201,38 @@ def get_status(chat_id: str):
     return status[0] if status is not None else None
 
 
-def assign_status(chat_id: str, status: str):
+def assign_user(message_tg: telebot.types.Message, status: str):
+    # Проверка
+    assert status in ("base", "editor", "admin"), "status must be base/editor/admin"
+
+    # Создание переменных
+    chat_id = message_tg.chat.id
+    username = message_tg.chat.username
+
     # Подключение к базе данных
     connection = sqlite3.connect(Paths.DataBase)
     cursor = connection.cursor()
 
     # Получим нынешний статус
-    temp = get_status(chat_id)
+    temp = get_user(chat_id)
 
-    # Запись данных в таблицу statuses
+    # Запись данных в таблицу users
     if temp is None and status:
         cursor.execute("""
-        INSERT INTO "statuses" (
+        INSERT INTO "users" (
           "id",
+          "username",
           "status"
         )
-        VALUES (?, ?)
-        """, (chat_id, status))
+        VALUES (?, ?, ?)
+        """, (chat_id, username, status))
     elif temp is not None and status:
-        cursor.execute("UPDATE statuses SET status = ? WHERE id = ?", (status, chat_id))
+        cursor.execute("UPDATE users SET status = ?, username = ? WHERE id = ?", (status, username, chat_id))
     elif temp is not None and not status:
-        cursor.execute("DELETE FROM statuses WHERE id = ?", (chat_id,))
+        cursor.execute("DELETE FROM users WHERE id = ?", (chat_id,))
 
     # Сохранение изменений
     connection.commit()
 
     # Закрытие соединения
     connection.close()
-
-
-# for Thread
-def daily_operations():
-    while True:
-        remove_old_contests()
-
-        for tense, lst in contests.items():
-            update(lst, tense)
-
-        sleep(60 * 60 * 24)
