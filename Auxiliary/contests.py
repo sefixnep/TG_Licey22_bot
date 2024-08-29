@@ -6,32 +6,31 @@ from datetime import datetime, timedelta
 # Contests
 storage = {'past': list(), 'present': list(), 'future': list()}
 
-
-def update(lst: list, tense):
+def update(lst: list, tense: str):
     lst.clear()
     contests_tense = operations.contests_filter_tense(tense)
     amount_pages = ceil(len(contests_tense) / (config.page_shape_contests[0] * config.page_shape_contests[1]))
 
     if amount_pages == 0:
-        lst.append(((button.back_to_contests_tense,),))
+        lst.append(((button.back_to_contests,),))
         return None
 
     def leafing(number: int):
         if amount_pages == 1:
-            return ((button.back_to_contests_tense,),)
+            return ((button.back_to_contests,),)
         elif amount_pages > 1 and number == 0:
-            return ((button.back_to_contests_tense,
-                     Button(" >> ", f"right_{tense}_{number + 1}_contests")),)
+            return ((button.back_to_contests,
+                     Button(" >> ", f"right_{tense}_{number + 1}_contests_page")),)
         elif amount_pages > 1 and number == amount_pages - 1:
-            return ((Button(" << ", f"left_{tense}_{number - 1}_contests"),
-                     button.back_to_contests_tense,),)
+            return ((Button(" << ", f"left_{tense}_{number - 1}_contests_page"),
+                     button.back_to_contests,),)
         else:
-            return ((Button(" << ", f"left_{tense}_{number - 1}_contests"),
-                     button.back_to_contests_tense,
-                     Button(" >> ", f"right_{tense}_{number + 1}_contests")),)
+            return ((Button(" << ", f"left_{tense}_{number - 1}_contests_page"),
+                     button.back_to_contests,
+                     Button(" >> ", f"right_{tense}_{number + 1}_contests_page")),)
 
     for page_number in range(amount_pages):
-        Button("🔙 Назад 🔙", f'back_to_{tense}_{page_number}_contests')
+        Button("🔙 Назад 🔙", f'back_to_{tense}_{page_number}_contests_page')
         page = tuple()
         for i in range(config.page_shape_contests[0]):
             line = tuple()
@@ -46,7 +45,7 @@ def update(lst: list, tense):
                     return None
 
                 contest = contests_tense[count]
-                callback_data = f'{contest[config.contest_indices.index("id")]}_contest'
+                callback_data = f'contest_{contest[config.contest_indices.index("id")]}'
 
                 dates = [datetime.strptime(contest[config.contest_indices.index(mode)], "%Y-%m-%d")
                          .strftime("%d.%m.%Y") for mode in ("date_start", "date_end")]
@@ -59,7 +58,7 @@ def update(lst: list, tense):
                         f"└ *Предметы*: `{', '.join(contest[config.contest_indices.index('tags')])}`\n" +
                         (f"\n_Примечание: {comment}_" if comment else ""),
                         ((Button("Перейти", contest[config.contest_indices.index('link')], is_link=True),),
-                         (getattr(button, f'back_to_{tense}_{len(lst)}_contests'),),),
+                         (getattr(button, f'back_to_{tense}_{len(lst)}_contests_page'),),),
                         getattr(button, callback_data))
 
                 line += (getattr(button, callback_data),)

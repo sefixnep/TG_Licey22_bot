@@ -6,6 +6,7 @@ from time import sleep
 def daily_operations():
     while True:
         operations.remove_old_contests()
+        operations.remove_old_news()
 
         for tense, lst in contests.storage.items():
             contests.update(lst, tense)

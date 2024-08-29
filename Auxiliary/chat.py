@@ -1,192 +1,9 @@
-from random import randint
-
-import telebot
-from loguru import logger
-
-from Auxiliary import config, functions
-from Auxiliary.DataBase import operations
-
-bot = telebot.TeleBot(config.BOT_TOKEN, parse_mode='html')
-
-
-class Message:
-    def __init__(self, text: str, buttons=None, *from_buttons, photo=None, func=lambda *args: None):
-        self.__text = text  # Текст сообщения
-        self.__photo = photo
-        self.__buttons = buttons  # Двумерный кортеж с кнопками в виде InlineKeyboardButton
-        self.__board_tg = None  # Клавиатура кнопок под сообщением: InlineKeyboardMarkup
-        if buttons:
-            self.__board_tg = telebot.types.InlineKeyboardMarkup()
-            for row in (map(lambda x: x.button_tg, buttons1D) for buttons1D in buttons):
-                self.__board_tg.row(*row)
-        for from_button in from_buttons:  # Кнопки, которые ведут к этому сообщению
-            from_button.to_messages += (self,)
-        self.__func = func  # Функция, которая должна происходить при вызове сообщения
-
-    def __call__(self, *args):
-        return self.__func(*args)
-
-    def __getitem__(self, item):
-        return self.__buttons[item[0]][item[1]]
-
-    def new_line(self, message_tg: telebot.types.Message, deleting_message=True, userSendLogger=True):
-        if userSendLogger:
-            self.userSendLogger(message_tg)
-        botMessage = self.__botSendMessage(message_tg)
-        if deleting_message:
-            try:
-                bot.delete_message(message_tg.chat.id, message_tg.id)
-            except:
-                pass
-
-        return botMessage
-
-    def old_line(self, message_tg: telebot.types.Message, text=None, userSendLogger=False):
-        if userSendLogger:
-            self.userSendLogger(message_tg, text)
-        if self.__photo is not None:
-            return self.new_line(message_tg)
-        return self.__botEditMessage(message_tg)
-
-    @staticmethod
-    def __trueText(text, message_tg: telebot.types.Message):
-        return (text.replace("<ID>", str(message_tg.chat.id))
-                .replace("<USERNAME>", str(message_tg.chat.username if message_tg.chat.username else "User")))
-
-    @staticmethod
-    def userSendLogger(message_tg: telebot.types.Message, text=None):
-        if text is None:
-            if '\n' in message_tg.text:
-                logger.info(f'{message_tg.from_user.username} ({message_tg.chat.id}): \n{message_tg.text}')
-            else:
-                logger.info(f'{message_tg.from_user.username} ({message_tg.chat.id}): {message_tg.text}')
-        else:
-            if '\n' in text:
-                logger.info(f'{message_tg.chat.username} ({message_tg.chat.id}): \n{text}')
-            else:
-                logger.info(f'{message_tg.chat.username} ({message_tg.chat.id}): {text}')
-
-    def __botSendMessage(self, message_tg: telebot.types.Message, parse_mode='MARKDOWN', indent=3):
-        text = self.__trueText(self.__text, message_tg)
-        botMessage = bot.send_message(chat_id=message_tg.chat.id, text=text,
-                                      reply_markup=self.__board_tg, parse_mode=parse_mode) \
-            if self.__photo is None else bot.send_photo(
-            chat_id=message_tg.chat.id, photo=self.__photo, caption=text,
-            reply_markup=self.__board_tg, parse_mode=parse_mode)
-
-        if self.__board_tg is None:
-            if '\n' in text:
-                logger.info(f"{config.Bot} ({botMessage.chat.username}, {message_tg.chat.id}):\n{text}\n")
-            else:
-                logger.info(f"{config.Bot} ({botMessage.chat.username}, {message_tg.chat.id}): {text}")
-        else:
-            reply_markup_text = ''
-            for reply_markup1 in botMessage.json['reply_markup']['inline_keyboard']:
-
-                for reply_markup2 in reply_markup1:
-                    reply_markup_text += f'[{reply_markup2["text"]}]' + (' ' * indent)
-                reply_markup_text = reply_markup_text[:-indent]
-
-                reply_markup_text += '\n'
-            reply_markup_text = reply_markup_text[:-1]
-            logger.info(
-                f"{config.Bot} ({botMessage.chat.username}, {message_tg.chat.id}):\n{text}\n{reply_markup_text}\n")
-        return botMessage
-
-    def __botEditMessage(self, message_tg: telebot.types.Message, parse_mode='MARKDOWN', indent=3):
-        text = self.__trueText(self.__text, message_tg)
-        try:
-            botMessage = bot.edit_message_text(chat_id=message_tg.chat.id, message_id=message_tg.id, text=text,
-                                               reply_markup=self.__board_tg,
-                                               parse_mode=parse_mode)
-        except:
-            botMessage = bot.send_message(chat_id=message_tg.chat.id, text=text,
-                                          reply_markup=self.__board_tg, parse_mode=parse_mode)
-            try:
-                bot.delete_message(chat_id=message_tg.chat.id, message_id=message_tg.id)
-            except:
-                pass
-
-        if self.__board_tg is None:
-            if '\n' in text:
-                logger.info(f"{config.Bot} ({botMessage.chat.username}, {message_tg.chat.id}):\n{text}\n")
-            else:
-                logger.info(f"{config.Bot} ({botMessage.chat.username}, {message_tg.chat.id}): {text}")
-        else:
-            reply_markup_text = ''
-            for reply_markup1 in botMessage.json['reply_markup']['inline_keyboard']:
-
-                for reply_markup2 in reply_markup1:
-                    reply_markup_text += f'[{reply_markup2["text"]}]' + (' ' * indent)
-                reply_markup_text = reply_markup_text[:-indent]
-
-                reply_markup_text += '\n'
-            reply_markup_text = reply_markup_text[:-1]
-            logger.info(
-                f"{config.Bot} ({botMessage.chat.username}, {message_tg.chat.id}):\n{text}\n{reply_markup_text}\n")
-        return botMessage
-
-
-class Button:
-    instances = list()  # Список со всеми объектами класса
-    callback_datas = dict()  # Словарь для хранения callback_data: data
-
-    def __init__(self, text: str, data: str, *to_messages: Message, is_link=False,
-                 func=lambda to_messages, message_tg: None):
-        self.text = text  # текст кнопки
-        if is_link:  # Если кнопка - ссылка
-            self.button_tg = telebot.types.InlineKeyboardButton(
-                self.text, url=data)  # кнопка в виде объекта InlineKeyboardButton
-        else:
-            instance = self.__getattr__(data)
-
-            if instance is not None:
-                callback_data = instance.callback_data
-                self.instances.remove(instance)
-            else:
-                callback_data = self.get_callback_data()
-                self.callback_datas[callback_data] = data
-            self.instances.append(self)
-
-            self.callback_data = callback_data  # Скрытые (уникальные) данные, несущиеся кнопкой
-            self.button_tg = telebot.types.InlineKeyboardButton(
-                self.text, callback_data=self.callback_data)  # кнопка в виде объекта InlineKeyboardButton
-            self.to_messages = to_messages  # Сообщения, к которым ведёт кнопка
-            self.__func = func  # Функция отбора сообщения из to_messages на основе предыдущего сообщения /
-            # вспомогательное
-
-    def __call__(self, message_tg,
-                 userSendLogger=True) -> Message:  # При вызове кновки отдаем сообщение к которому будем идти
-        if userSendLogger:
-            Message.userSendLogger(message_tg, f'[{self.text}]')
-        if self.__func(self.to_messages, message_tg) is not None:
-            return self.__func(self.to_messages, message_tg)
-        if self.to_messages:
-            return self.to_messages[0]
-
-    def __getattr__(self, data):  # выполняем поиск кнопки по её скрытым данным, т.к они уникальные
-        for instance in self.instances:
-            if self.callback_datas[instance.callback_data] == data:
-                return instance
-
-    def get_instance(self, callback_data):
-        for instance in self.instances:
-            if instance.callback_data == callback_data:
-                return instance
-
-    @classmethod
-    def get_callback_data(cls):
-        length = 10
-        callback_data = ''.join(str(randint(0, 9)) for _ in range(length))
-        while callback_data in cls.callback_datas:
-            callback_data = ''.join(str(randint(0, 9)) for _ in range(length))
-
-        return callback_data
+from Auxiliary.utils import *
 
 
 # Custom functions for buttons
 def delete_message(_, message_tg):
-    bot.delete_message(message_tg.chat.id, message_tg.id)
+    Message.botDeleteMessage(message_tg)
 
 
 def clear_next_step_handler(_, message_tg):
@@ -196,7 +13,7 @@ def clear_next_step_handler(_, message_tg):
 
 
 def status_message(to_messages, message_tg):
-    status = operations.get_user(message_tg.chat.id)
+    status = operations.get_status(message_tg.chat.id)
     if status is None or status == "base":
         return to_messages[0]
     elif status == "editor":
@@ -205,12 +22,32 @@ def status_message(to_messages, message_tg):
         return to_messages[2]
 
 
+# # Check access
+
+# # # Editor
+def check_access_editor(to_messages, message_tg):
+    if (operations.get_status(message_tg.chat.id) not in ("admin", "editor") and
+            len(to_messages) > 1):  # Проверка наличия доступа
+        return to_messages[1]
+
+    return to_messages[0]
+
+
+# # # Admin
+def check_access_admin(to_messages, message_tg):
+    if operations.get_status(message_tg.chat.id) != "admin" and len(to_messages) > 1:  # Проверка наличия доступа
+        return to_messages[1]
+
+    return to_messages[0]
+
+
 # Custom functions for messages
 
-# # Delete contest
+# # Contests
+
+# # # Delete contest
 def delete_contest_id(message_tg):
-    Message.userSendLogger(message_tg)
-    botMessage = message_contest_delete_id.old_line(message_tg)
+    botMessage = message_contest_delete_id.line(message_tg)
     bot.register_next_step_handler(botMessage, delete_contest_result(botMessage))
     return True
 
@@ -219,22 +56,21 @@ def delete_contest_result(botMessage):
     def wrapper(message_tg):
         nonlocal botMessage
         Message.userSendLogger(message_tg)
-        bot.delete_message(message_tg.chat.id, message_tg.id)
+        Message.botDeleteMessage(message_tg)
 
         id = message_tg.text.strip()
         if operations.get_contest(id) is not None:
             operations.remove_contests(id)
-            message_contest_delete_success.old_line(botMessage)
+            message_contest_delete_success.line(botMessage)
         else:
-            message_contest_delete_fail.old_line(botMessage)
+            message_contest_delete_fail.line(botMessage)
 
     return wrapper
 
 
-# # Add contest
+# # # Add contest
 def add_contest_name(message_tg):
-    Message.userSendLogger(message_tg)
-    botMessage = message_contest_add_name.old_line(message_tg)
+    botMessage = message_contest_add_name.line(message_tg)
     bot.register_next_step_handler(botMessage, add_contest_date_start(botMessage))
     return True
 
@@ -243,10 +79,10 @@ def add_contest_date_start(botMessage):
     def wrapper(message_tg):
         nonlocal botMessage
         Message.userSendLogger(message_tg)
-        bot.delete_message(message_tg.chat.id, message_tg.id)
+        Message.botDeleteMessage(message_tg)
 
         name = message_tg.text.strip()
-        botMessage = message_contest_add_date_start.old_line(botMessage)
+        botMessage = message_contest_add_date_start.line(botMessage)
         bot.register_next_step_handler(botMessage, add_contest_date_end(botMessage, name))
 
     return wrapper
@@ -256,7 +92,7 @@ def add_contest_date_end(botMessage, name):
     def wrapper(message_tg):
         nonlocal botMessage, name
         Message.userSendLogger(message_tg)
-        bot.delete_message(message_tg.chat.id, message_tg.id)
+        Message.botDeleteMessage(message_tg)
 
         date_start = message_tg.text.strip()
 
@@ -264,10 +100,10 @@ def add_contest_date_end(botMessage, name):
         try:
             date_start = operations.parser.parse(date_start).strftime('%Y-%m-%d')
         except:
-            message_contest_add_error.old_line(botMessage)
+            message_contest_add_error.line(botMessage)
             return None
 
-        botMessage = message_contest_add_date_end.old_line(botMessage)
+        botMessage = message_contest_add_date_end.line(botMessage)
         bot.register_next_step_handler(botMessage, add_contest_link(botMessage, name, date_start))
 
     return wrapper
@@ -277,7 +113,7 @@ def add_contest_link(botMessage, name, date_start):
     def wrapper(message_tg):
         nonlocal botMessage, name, date_start
         Message.userSendLogger(message_tg)
-        bot.delete_message(message_tg.chat.id, message_tg.id)
+        Message.botDeleteMessage(message_tg)
 
         date_end = message_tg.text.strip()
 
@@ -285,10 +121,10 @@ def add_contest_link(botMessage, name, date_start):
         try:
             date_end = operations.parser.parse(date_end).strftime('%Y-%m-%d')
         except:
-            message_contest_add_error.old_line(botMessage)
+            message_contest_add_error.line(botMessage)
             return None
 
-        botMessage = message_contest_add_link.old_line(botMessage)
+        botMessage = message_contest_add_link.line(botMessage)
         bot.register_next_step_handler(botMessage, add_contest_tags(botMessage, name, date_start, date_end))
 
     return wrapper
@@ -298,16 +134,16 @@ def add_contest_tags(botMessage, name, date_start, date_end):
     def wrapper(message_tg):
         nonlocal botMessage, name, date_start, date_end
         Message.userSendLogger(message_tg)
-        bot.delete_message(message_tg.chat.id, message_tg.id)
+        Message.botDeleteMessage(message_tg)
 
         link = message_tg.text.strip()
 
         # Проверка на валидную ссылку
-        if not functions.is_valid_url(link):
-            message_contest_add_error.old_line(botMessage)
+        if not is_valid_url(link):
+            message_contest_add_error.line(botMessage)
             return None
 
-        botMessage = message_contest_add_tags.old_line(botMessage)
+        botMessage = message_contest_add_tags.line(botMessage)
         bot.register_next_step_handler(botMessage, add_contest_comment(
             botMessage, name, date_start, date_end, link))
 
@@ -318,14 +154,14 @@ def add_contest_comment(botMessage, name, date_start, date_end, link):
     def wrapper(message_tg):
         nonlocal botMessage, name, date_start, date_end, link
         Message.userSendLogger(message_tg)
-        bot.delete_message(message_tg.chat.id, message_tg.id)
+        Message.botDeleteMessage(message_tg)
 
-        tags = message_tg.text.strip().lower().split(', ')
+        tags = list(map(str.strip, message_tg.text.lower().split(',')))
         message = Message("Напишите комментарий к конкурсу (необязательно)",
                           ((Button("🔜 Пропустить 🔜",
                                    f"contest_skip_{name}_{date_start}_{date_end}_{link}_{';'.join(tags)}_add",
                                    func=clear_next_step_handler),), (button.cancel_edit_contest,),))
-        botMessage = message.old_line(botMessage)
+        botMessage = message.line(botMessage)
         bot.register_next_step_handler(botMessage, add_contest_confirm(
             botMessage, name, date_start, date_end, link, tags))
 
@@ -337,7 +173,7 @@ def add_contest_confirm(botMessage, name, date_start, date_end, link, tags):
         nonlocal botMessage, name, date_start, date_end, link
         if message_tg is not None:
             Message.userSendLogger(message_tg)
-            bot.delete_message(message_tg.chat.id, message_tg.id)
+            Message.botDeleteMessage(message_tg)
 
         comment = message_tg.text.strip() if message_tg is not None else None
         message = Message("*Подтвердите данные*:\n\n"
@@ -351,7 +187,59 @@ def add_contest_confirm(botMessage, name, date_start, date_end, link, tags):
                                    f"{';'.join(tags)}{f'_{comment}' if comment is not None else ''}_add")),
                            ))
 
-        botMessage = message.old_line(botMessage)
+        botMessage = message.line(botMessage)
+
+    return wrapper
+
+
+# # Admin panel
+
+# # # Edit status
+def edit_status(message_tg):
+    botMessage = message_status_edit.line(message_tg)
+    bot.register_next_step_handler(botMessage, status_choice(botMessage))
+    return True
+
+
+def status_choice(botMessage):
+    def wrapper(message_tg):
+        nonlocal botMessage
+        Message.userSendLogger(message_tg)
+        Message.botDeleteMessage(message_tg)
+
+        chat_id = message_tg.text.strip()
+        message = Message("Выберите статус для пользователя",
+                          (
+                              (Button("Block", f"block_{chat_id}_edit-status"),
+                               Button("Base", f"base_{chat_id}_edit-status")),
+
+                              (Button("Editor", f"editor_{chat_id}_edit-status"),
+                               Button("Admin", f"admin_{chat_id}_edit-status")),
+
+                              (button.back_to_admin_panel,)
+                          ))
+
+        message.line(botMessage)
+
+    return wrapper
+
+# # # Find contest author
+def find_contest_author(message_tg):
+    botMessage = message_find_contest_author.line(message_tg)
+    bot.register_next_step_handler(botMessage, find_contest_author_answer(botMessage))
+    return True
+
+def find_contest_author_answer(botMessage):
+    def wrapper(message_tg):
+        nonlocal botMessage
+        Message.userSendLogger(message_tg)
+        Message.botDeleteMessage(message_tg)
+
+        id = message_tg.text.strip()
+        message = Message(f"*Chat_id автора*: `{operations.get_contest_author(id)}`",
+                          ((button.back_to_admin_panel,),))
+
+        message.line(botMessage)
 
     return wrapper
 
@@ -359,63 +247,82 @@ def add_contest_confirm(botMessage, name, date_start, date_end, link, tags):
 # Buttons
 button = Button('', '')
 
+# Contact
+Button("Контакты", "contacts")
+
+# Start
 Button("Новости", "news")
-Button("Конкурсы", "contests_tense")
+Button("Конкурсы", "contests")
 
-Button("Изменить", "news_edit")
-Button("Изменить", "contests_edit")
-Button("Изменить редакторов", "editors_edit")
+# # Edit
+Button("Изменить", "edit_contest", func=check_access_editor)
+Button("Изменить", "edit_news", func=check_access_editor)
 
-Button("Удалить", "delete_contest")
-Button("Добавить", "add_contest")
+# Tense contest
+Button("Прошедшие", "past_contests_page")
+Button("Идущие", "present_contests_page")
+Button("Грядущие", "future_contests_page")
 
-Button("Прошедшие", "past_contests")
-Button("Идущие", "present_contests")
-Button("Грядущие", "future_contests")
+# Editor
+Button("Удалить", "delete_contest", func=check_access_editor)
+Button("Добавить", "add_contest", func=check_access_editor)
 
+# Admin
+Button("Админ панель", "admin_panel", func=check_access_admin)
+
+Button("Изменить статус", "edit_status", func=check_access_admin)
+Button("Узнать автора конкурса", "find_contest_author", func=check_access_admin)
+Button("Рассылка", "mailing", func=check_access_admin)
+
+# Back
 Button("🔙 Назад 🔙", "back_to_start", func=status_message)
-Button("🔙 Назад 🔙", "back_to_contests_tense")
-Button("🔙 Назад 🔙", "back_to_contests_edit")
+Button("🔙 Назад 🔙", "back_to_contests")
+Button("🔙 Назад 🔙", "back_to_edit_contest", func=check_access_editor)
+Button("🔙 Назад 🔙", "back_to_admin_panel", func=check_access_admin)
 
+# Cancel / close
 Button("✖️ Отменить ✖️", "cancel_edit_contest", func=clear_next_step_handler)
+Button("✖️ Отменить ✖️", "cancel_admin_edit", func=clear_next_step_handler)
 Button("✖️ Закрыть ✖️", "close", func=delete_message)
 
 # Messages
-message_contacts = Message("*Менеджер*: @Nadezda\_Sibiri", ((button.close,),))
+message_contacts = Message("*Менеджер*: @Nadezda\_Sibiri", ((button.close,),), button.contacts)
 
-# Start messages
+# Start
 message_start = Message("*ID:* `<ID>`\n"
                         "_Привет, <USERNAME>!_",
-                        ((button.news, button.contests_tense),),
+                        ((button.news, button.contests),),
                         button.back_to_start)
 
 message_start_editor = Message("*ID:* `<ID>`\n"
                                "_Привет, <USERNAME>!_\n"
-                               "*Твоя роль:* `Редактор`",
-                               ((button.news, button.contests_tense),
-                                (button.news_edit, button.contests_edit)),
+                               "Ваша роль: *Редактор*",
+                               ((button.news, button.contests),
+                                (button.edit_news, button.edit_contest)),
                                button.back_to_start)
 
 message_start_admin = Message("*ID:* `<ID>`\n"
                               "_Привет, <USERNAME>!_\n"
-                              "Твоя роль: *Администратор*",
-                              ((button.news, button.contests_tense),
-                               (button.news_edit, button.contests_edit),
-                               (button.editors_edit,)),
+                              "Ваша роль: *Администратор*",
+                              ((button.news, button.contests),
+                               (button.edit_news, button.edit_contest),
+                               (button.admin_panel,)),
                               button.back_to_start)
 
-# Contest messages
+# Contest
 message_contest_tense = Message("Выбери с какими конкурсами желаешь ознакомиться:",
-                                ((button.past_contests, button.present_contests, button.future_contests),
+                                ((button.past_contests_page,
+                                  button.present_contests_page,
+                                  button.future_contests_page),
                                  (button.back_to_start,)),
-                                button.contests_tense, button.back_to_contests_tense)
+                                button.contests, button.back_to_contests)
 
 # # Edit
 message_contest_edit = Message("Что вы хотите сделать с конкурсом?",
                                ((button.delete_contest, button.add_contest), (button.back_to_start,)),
-                               button.contests_edit,
+                               button.edit_contest,
                                button.cancel_edit_contest,
-                               button.back_to_contests_edit)
+                               button.back_to_edit_contest)
 
 # # # Delete
 message_contest_delete_id = Message("Напишите ID конкурса",
@@ -424,10 +331,10 @@ message_contest_delete_id = Message("Напишите ID конкурса",
                                     func=delete_contest_id)
 
 message_contest_delete_fail = Message("Конкурс с данным ID не найден.",
-                                      ((button.back_to_contests_edit,),))
+                                      ((button.back_to_edit_contest,),))
 
 message_contest_delete_success = Message("Конкурс успешно удален!",
-                                         ((button.back_to_contests_edit,),))
+                                         ((button.back_to_edit_contest,),))
 
 # # # Add
 message_contest_add_name = Message("Напишите название конкурса (Пример: НТО искусственный интеллект)",
@@ -435,10 +342,10 @@ message_contest_add_name = Message("Напишите название конку
                                    button.add_contest,
                                    func=add_contest_name)
 
-message_contest_add_date_start = Message("Напишите дату начала конкурса (Пример: 01.01.2000)",
+message_contest_add_date_start = Message("Напишите дату начала *РЕГИСТРАЦИИ* конкурса (Пример: 01.01.2000)",
                                          ((button.cancel_edit_contest,),))
 
-message_contest_add_date_end = Message("Напишите дату конца конкурса (Пример: 01.01.2000)",
+message_contest_add_date_end = Message("Напишите дату конца *РЕГИСТРАЦИИ* конкурса (Пример: 01.01.2000)",
                                        ((button.cancel_edit_contest,),))
 
 message_contest_add_link = Message("Напишите ссылку на конкурс (Пример: https://example.com/)",
@@ -448,9 +355,40 @@ message_contest_add_tags = Message("Напишите теги конкурса �
                                    ((button.cancel_edit_contest,),))
 
 message_contest_add_success = Message("*Конкурс успешно добавлен!*\n"
-                                      "_появится в списке в течении 24 часов_", ((button.back_to_contests_edit,),))
+                                      "_появится в списке в течении 24 часов_", ((button.back_to_edit_contest,),))
 
-message_contest_add_error = Message("*Ошибка введенных данных*", ((button.back_to_contests_edit,),))
+message_contest_add_error = Message("*Ошибка введенных данных*", ((button.back_to_edit_contest,),))
 
-# News messages
-message_news = Message("Выберите событие:", ((button.back_to_start,),), button.news)
+# News
+message_news = Message("*В разработке*", ((button.back_to_start,),), button.news)
+
+# # Edit
+message_news_edit = Message("*В разработке*", ((button.back_to_start,),), button.edit_news)
+
+# Admin panel
+message_admin_panel = Message("Выберите действие:",
+                              ((button.edit_status,), (button.find_contest_author,), (button.back_to_start,)),
+                              button.admin_panel, button.cancel_admin_edit, button.back_to_admin_panel)
+
+# # Edit status
+message_status_edit = Message("Введите ID пользователя:",
+                              ((button.cancel_admin_edit,),),
+                              button.edit_status,
+                              func=edit_status)
+
+message_status_edit_success = Message("*Статус был изменён!*", ((button.back_to_start,),))
+
+# # Find contest author
+message_find_contest_author = Message("Введите *ID* конкурса:", ((button.cancel_admin_edit,),),
+                                      button.find_contest_author, func=find_contest_author)
+
+# Access
+message_no_access = Message("*Отсутствует доступ!*",
+                            ((button.back_to_start,),),
+                            button.edit_news, button.edit_contest, button.admin_panel,
+                            button.delete_contest, button.add_contest)
+
+message_block = Message("*ID:* `<ID>`\n"
+                        "*Вы заблокированы!*\n"
+                        "_Для разблокироваки /contacts_",
+                        ((button.close,),))
