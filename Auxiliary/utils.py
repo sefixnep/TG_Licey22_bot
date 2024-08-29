@@ -11,7 +11,7 @@ bot = telebot.TeleBot(config.BOT_TOKEN, parse_mode='html')
 
 
 class Message:
-    def __init__(self, text: str, buttons: tuple | None = None, *from_buttons: Button, photo: BinaryIO | None = None,
+    def __init__(self, text: str, buttons: tuple | None = None, *from_buttons, photo: BinaryIO | None = None,
                  func: Callable = lambda *args: None):
         self.__text = text  # Текст сообщения
         self.__photo = photo  # В виде open(path, 'rb')
