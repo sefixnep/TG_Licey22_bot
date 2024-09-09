@@ -47,8 +47,17 @@ class Message:
 
     @staticmethod
     def __trueText(text: str, message_tg: telebot.types.Message):
-        return (text.replace("<ID>", str(message_tg.chat.id))
-                .replace("<USERNAME>", str(message_tg.chat.username if message_tg.chat.username else "User")))
+        # Спецсимволы: https://core.telegram.org/api/entities
+
+        decryption = {
+            "<ID>": str(message_tg.chat.id),
+            "<USERNAME>": str(message_tg.chat.username) if message_tg.chat.username else "User",
+        }
+
+        for key, value in decryption.items():
+            text = text.replace(key, value)
+
+        return text
 
     @staticmethod
     def userSendLogger(message_tg: telebot.types.Message, text: str | None = None):
@@ -63,7 +72,7 @@ class Message:
             else:
                 logger.info(f'{message_tg.chat.username} ({message_tg.chat.id}): {text}')
 
-    def __botSendMessage(self, message_tg: telebot.types.Message, parse_mode: str = 'MARKDOWN', indent: int = 3):
+    def __botSendMessage(self, message_tg: telebot.types.Message, parse_mode: str = 'HTML', indent: int = 3):
         text = self.__trueText(self.__text, message_tg)
         botMessage = bot.send_message(chat_id=message_tg.chat.id, text=text,
                                       reply_markup=self.__board_tg, parse_mode=parse_mode) \
@@ -90,7 +99,7 @@ class Message:
                 f"{config.Bot} ({botMessage.chat.username}, {message_tg.chat.id}):\n{text}\n{reply_markup_text}\n")
         return botMessage
 
-    def __botEditMessage(self, message_tg: telebot.types.Message, parse_mode: str = 'MARKDOWN', indent: int = 3):
+    def __botEditMessage(self, message_tg: telebot.types.Message, parse_mode: str = 'HTML', indent: int = 3):
         text = self.__trueText(self.__text, message_tg)
         try:
             botMessage = bot.edit_message_text(chat_id=message_tg.chat.id, message_id=message_tg.id, text=text,

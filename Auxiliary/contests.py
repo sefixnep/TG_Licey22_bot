@@ -1,6 +1,6 @@
 from Auxiliary.chat import *
 from math import ceil
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 # Contests
@@ -52,11 +52,11 @@ def update(lst: list, tense: str):
                 comment = contest[config.contest_indices.index('comment')]
 
                 Button(contest[config.contest_indices.index('name')], callback_data)
-                Message(f"🆔: `{contest[config.contest_indices.index('id')]}`\n"
-                        f"*Конкурс*: `{contest[config.contest_indices.index('name')]}`\n"
-                        f"├ *Дата проведения*: `{' - '.join(dates)}`\n"
-                        f"└ *Предметы*: `{', '.join(contest[config.contest_indices.index('tags')])}`\n" +
-                        (f"\n_Примечание: {comment}_" if comment else ""),
+                Message(f"🆔: <code>{contest[config.contest_indices.index('id')]}</code>\n"
+                        f"<b>Конкурс</b>: <code>{contest[config.contest_indices.index('name')]}</code>\n"
+                        f"├ <b>Дата проведения</b>: <code>{' - '.join(dates)}</code>\n"
+                        f"└ <b>Предметы</b>: <code>{', '.join(contest[config.contest_indices.index('tags')])}</code>\n" +
+                        (f"\n<i>Примечание: {comment}</i>" if comment else ""),
                         ((Button("Перейти", contest[config.contest_indices.index('link')], is_link=True),),
                          (getattr(button, f'back_to_{tense}_{len(lst)}_contests_page'),),),
                         getattr(button, callback_data))

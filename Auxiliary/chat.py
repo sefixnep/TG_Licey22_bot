@@ -176,10 +176,10 @@ def add_contest_confirm(botMessage, name, date_start, date_end, link, tags):
             Message.botDeleteMessage(message_tg)
 
         comment = message_tg.text.strip() if message_tg is not None else None
-        message = Message("*Подтвердите данные*:\n\n"
-                          f"*Конкурс*: `{name}`\n"
-                          f"├ *Дата проведения*: `{date_start} - {date_end}`\n"
-                          f"└ *Предметы*: `{', '.join(tags)}`\n" +
+        message = Message("<b>Подтвердите данные</b>:\n\n"
+                          f"<b>Конкурс</b>: <code>{name}</code>\n"
+                          f"├ <b>Дата проведения</b>: <code>{date_start} - {date_end}</code>\n"
+                          f"└ <b>Предметы</b>: <code>{', '.join(tags)}</code>\n" +
                           (f"\n_Примечание: {comment}_" if comment else ""),
                           ((button.cancel_edit_contest,
                             Button("✔️ Подтвердить ✔️",
@@ -286,24 +286,24 @@ Button("✖️ Отменить ✖️", "cancel_admin_edit", func=clear_next_st
 Button("✖️ Закрыть ✖️", "close", func=delete_message)
 
 # Messages
-message_contacts = Message("*Менеджер*: @Nadezda\_Sibiri", ((button.close,),), button.contacts)
+message_contacts = Message("<b>Менеджер</b>: @Nadezda_Sibiri", ((button.close,),), button.contacts)
 
 # Start
-message_start = Message("*ID:* `<ID>`\n"
-                        "_Привет, <USERNAME>!_",
+message_start = Message("<b>ID:</b> <code><ID></code>\n"
+                        "<i>Привет, <USERNAME>!</i>\n",
                         ((button.news, button.contests),),
                         button.back_to_start)
 
-message_start_editor = Message("*ID:* `<ID>`\n"
-                               "_Привет, <USERNAME>!_\n"
-                               "Ваша роль: *Редактор*",
+message_start_editor = Message("<b>ID:</b> <code><ID></code>\n"
+                               "<i>Привет, <USERNAME>!</i>\n"
+                               "Ваша роль: <b>Редактор</b>",
                                ((button.news, button.contests),
                                 (button.edit_news, button.edit_contest)),
                                button.back_to_start)
 
-message_start_admin = Message("*ID:* `<ID>`\n"
-                              "_Привет, <USERNAME>!_\n"
-                              "Ваша роль: *Администратор*",
+message_start_admin = Message("<b>ID:</b> <code><ID></code>\n"
+                              "<i>Привет, <USERNAME>!</i>\n"
+                              "Ваша роль: <b>Администратор</b>",
                               ((button.news, button.contests),
                                (button.edit_news, button.edit_contest),
                                (button.admin_panel,)),
@@ -342,10 +342,10 @@ message_contest_add_name = Message("Напишите название конку
                                    button.add_contest,
                                    func=add_contest_name)
 
-message_contest_add_date_start = Message("Напишите дату начала *РЕГИСТРАЦИИ* конкурса (Пример: 01.01.2000)",
+message_contest_add_date_start = Message("Напишите дату начала <b>РЕГИСТРАЦИИ</b> конкурса (Пример: 01.01.2000)",
                                          ((button.cancel_edit_contest,),))
 
-message_contest_add_date_end = Message("Напишите дату конца *РЕГИСТРАЦИИ* конкурса (Пример: 01.01.2000)",
+message_contest_add_date_end = Message("Напишите дату конца <b>РЕГИСТРАЦИИ</b> конкурса (Пример: 01.01.2000)",
                                        ((button.cancel_edit_contest,),))
 
 message_contest_add_link = Message("Напишите ссылку на конкурс (Пример: https://example.com/)",
@@ -354,16 +354,16 @@ message_contest_add_link = Message("Напишите ссылку на конк�
 message_contest_add_tags = Message("Напишите теги конкурса через запятую (Пример: 'математика, информатика')",
                                    ((button.cancel_edit_contest,),))
 
-message_contest_add_success = Message("*Конкурс успешно добавлен!*\n"
-                                      "_появится в списке в течении 24 часов_", ((button.back_to_edit_contest,),))
+message_contest_add_success = Message("<b>Конкурс успешно добавлен!</b>\n"
+                                      "<i>появится в списке в течении 24 часов</i>", ((button.back_to_edit_contest,),))
 
-message_contest_add_error = Message("*Ошибка введенных данных*", ((button.back_to_edit_contest,),))
+message_contest_add_error = Message("<b>Ошибка введенных данных</b>", ((button.back_to_edit_contest,),))
 
 # News
-message_news = Message("*В разработке*", ((button.back_to_start,),), button.news)
+message_news = Message("<b>В разработке</b>", ((button.back_to_start,),), button.news)
 
 # # Edit
-message_news_edit = Message("*В разработке*", ((button.back_to_start,),), button.edit_news)
+message_news_edit = Message("<b>В разработке</b>", ((button.back_to_start,),), button.edit_news)
 
 # Admin panel
 message_admin_panel = Message("Выберите действие:",
@@ -376,19 +376,19 @@ message_status_edit = Message("Введите ID пользователя:",
                               button.edit_status,
                               func=edit_status)
 
-message_status_edit_success = Message("*Статус был изменён!*", ((button.back_to_start,),))
+message_status_edit_success = Message("<b>Статус был изменён!</b>", ((button.back_to_start,),))
 
 # # Find contest author
-message_find_contest_author = Message("Введите *ID* конкурса:", ((button.cancel_admin_edit,),),
+message_find_contest_author = Message("Введите <b>ID</b> конкурса:", ((button.cancel_admin_edit,),),
                                       button.find_contest_author, func=find_contest_author)
 
 # Access
-message_no_access = Message("*Отсутствует доступ!*",
+message_no_access = Message("<b>Отсутствует доступ!</b>",
                             ((button.back_to_start,),),
                             button.edit_news, button.edit_contest, button.admin_panel,
                             button.delete_contest, button.add_contest)
 
-message_block = Message("*ID:* `<ID>`\n"
-                        "*Вы заблокированы!*\n"
-                        "_Для разблокироваки /contacts_",
+message_block = Message("<b>ID:</b> <code><ID></code>\n"
+                        "<b>Вы заблокированы!</b>\n"
+                        "<i>Для разблокироваки /contacts</i>",
                         ((button.close,),))

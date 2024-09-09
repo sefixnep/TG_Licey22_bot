@@ -8,17 +8,16 @@ from Auxiliary.chat import *
 def start(message_tg: telebot.types.Message):
     Message.userSendLogger(message_tg)
     status = operations.get_status(message_tg.chat.id)
-
     if status == 'admin':
         message = message_start_admin
     elif status == 'editor':
         message = message_start_editor
-    elif status != 'block':
+    elif status == 'block':
+        message = message_block
+    else:
         if status != "base":
             operations.record_user(message_tg.chat.id, message_tg.chat.username, "base")
         message = message_start
-    else:
-        message = message_block
 
     message.line(message_tg)
 
@@ -59,7 +58,7 @@ def callback_reception(call: telebot.types.CallbackQuery):
                     if command_data[:2] == ['back', 'to'] or command_data[0] in ('left', 'right'):
                         # (back to / {direction}) {tense} {page} contests
                         Message("Выбери конкурс:", contests.storage[command_data[-3]]
-                                [int(command_data[-2])]).line(call.message)
+                        [int(command_data[-2])]).line(call.message)
 
                     elif command_data[0] in contests.storage and len(command_data) == 2:
                         # {tense} contests
@@ -103,12 +102,12 @@ def callback_reception(call: telebot.types.CallbackQuery):
             if command == 'edit-status':
                 if len(command_data) == 2:
                     # {status} {chat_id}
-                    message = Message(f"*Подтвердите*:\n\n"
-                                      f"*Username*: `" + operations.get_username(command_data[1]).replace('_', '\_') +
-                                      "`\n"
-                                      f"*Chat_id*: `{command_data[1]}`\n"
-                                      f"*Текущий статус*: `{operations.get_status(command_data[1])}`\n"
-                                      f"*Получаемый статус*: `{command_data[0]}`",
+                    message = Message(f"<b>Подтвердите</b>:\n\n"
+                                      f"<b>Username</b>: <code>" + operations.get_username(command_data[1]).replace('_', '\_') +
+                                      "</code>\n"
+                                      f"<b>Chat_id</b>: <code>{command_data[1]}</code>\n"
+                                      f"<b>Текущий статус</b>: <code>{operations.get_status(command_data[1])}</code>\n"
+                                      f"<b>Получаемый статус</b>: <code>{command_data[0]}</code>",
                                       ((button.cancel_admin_edit,
                                         Button("✔️ Подтвердить ✔️",
                                                f"{'_'.join(command_data)}_confirm_{command}")),))
@@ -144,4 +143,4 @@ if __name__ == '__main__':
     print(f"link: https://t.me/{config.Bot}")
     logger.info(f'{config.Bot} start')
 
-bot.infinity_polling(logger_level=None)
+bot.infinity_polling(logger_level=None)  #

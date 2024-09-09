@@ -18,4 +18,4 @@ news_removal_day = 1
 
 # Path
 class Paths:
-    DataBase = "Auxiliary/DataBase/DataBase.db"
+    DataBase = "../TG_Licey22_bot/Auxiliary/DataBase/DataBase.db"  # Для хостинга полный путь
