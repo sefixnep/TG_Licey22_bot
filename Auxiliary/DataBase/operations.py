@@ -7,6 +7,7 @@ from dateutil import parser
 from Auxiliary import config
 
 
+# noinspection SqlNoDataSourceInspection
 def creating_tables():
     # Подключение к базе данных
     connection = sqlite3.connect(config.Paths.DataBase)
@@ -31,8 +32,9 @@ def creating_tables():
         CREATE TABLE IF NOT EXISTS "news" (
           "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
           "name" VARCHAR(255) NOT NULL,
-          "comment" TEXT NOT NULL,
-          "date" DATETIME NOT NULL
+          "description" TEXT NOT NULL,
+          "date" DATETIME NOT NULL,
+          "author" TEXT NOT NULL
         );
         """)
 
@@ -217,6 +219,27 @@ def contests_filter_tense(tense: str):
 
 
 # News
+def get_all_news():
+    # Подключение к базе данных
+    connection = sqlite3.connect(config.Paths.DataBase)
+    cursor = connection.cursor()
+
+    # Находим нужную новость по id
+    cursor.execute("SELECT * FROM news")
+
+    # Достаем данные из таблицы и преобразуем теги
+    news = cursor.fetchall()
+    for i in range(len(news)):
+        news[i] = (news[i][:config.news_indices.index("date")] +
+                (datetime.strptime(news[i][config.news_indices.index("date")], "%Y-%m-%d %H:%M:%S"),) +
+                news[i][config.news_indices.index("date") + 1:])
+
+    # Закрытие соединения
+    connection.close()
+
+    return news
+
+
 def get_news(id: str | int):
     # Подключение к базе данных
     connection = sqlite3.connect(config.Paths.DataBase)
@@ -236,8 +259,24 @@ def get_news(id: str | int):
 
     return news
 
+def get_news_author(id: str | int):
+    # Подключение к базе данных
+    connection = sqlite3.connect(config.Paths.DataBase)
+    cursor = connection.cursor()
 
-def record_news(name: str, comment: str):
+    # Находим нужную новость по id
+    cursor.execute("SELECT author FROM news WHERE id = ?", (id,))
+
+    # Достаем данные из таблицы и преобразуем теги
+    author = cursor.fetchone()
+
+    # Закрытие соединения
+    connection.close()
+
+    return author[0] if author else None
+
+
+def record_news(name: str, comment: str, chat_id: str | int):
     # Подключение к базе данных
     connection = sqlite3.connect(config.Paths.DataBase)
     cursor = connection.cursor()
@@ -248,18 +287,19 @@ def record_news(name: str, comment: str):
     # Ищем такую-же новость
     cursor.execute("SELECT id FROM news WHERE "
                    "name = ? AND "
-                   "comment = ?", (name, comment))
+                   "description = ?", (name, comment))
 
     # Запись данных в таблицу news если такой новости не было
     if cursor.fetchone() is None:
         cursor.execute("""
-                INSERT INTO "news" (
-                  "name",
-                  "comment",
-                  "date"
-                )
-                VALUES (?, ?, ?)
-                """, (name, comment, date))
+            INSERT INTO "news" (
+              "name",
+              "description",
+              "date",
+              "author"
+            )
+            VALUES (?, ?, ?, ?)
+        """, (name, comment, date, chat_id))
 
         # Сохранение изменений
         connection.commit()
@@ -300,9 +340,9 @@ def remove_old_news():
 
     # Выполнение запроса к базе данных
     cursor.execute("""
-    DELETE FROM contests 
-    WHERE date_end < ?;
-""", (thirty_days_ago_str,))
+        DELETE FROM news 
+        WHERE date < ?;
+    """, (thirty_days_ago_str,))
 
     # Сохранение изменений
     connection.commit()

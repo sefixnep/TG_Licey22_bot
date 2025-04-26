@@ -178,7 +178,7 @@ class Button:
             return self.to_messages[0]
 
     def __repr__(self):
-        return self.callback, self.callback_data[self.callback]
+        return self.callback_data[self.callback]
 
     def __getattr__(self, data: str):  # by data
         for instance in self.instances:

@@ -1,6 +1,6 @@
 from threading import Thread
 
-from Auxiliary import contests, multitasking
+from Auxiliary import contests, news, multitasking
 from Auxiliary.chat import *
 
 
@@ -54,16 +54,26 @@ def callback_reception(call: telebot.types.CallbackQuery):
 
             if command == 'page':
                 if command_data[-1] == 'contests':
-                    print(command_data)
                     if command_data[:2] == ['back', 'to'] or command_data[0] in ('left', 'right'):
                         # (back to / {direction}) {tense} {page} contests
-                        Message("Выбери конкурс:", contests.storage[command_data[-3]]
-                        [int(command_data[-2])]).line(call.message)
+                        page = contests.storage[command_data[-3]][int(command_data[-2])]
+                        Message("Выбери конкурс:", page).line(call.message)
 
                     elif command_data[0] in contests.storage and len(command_data) == 2:
                         # {tense} contests
                         page = contests.storage[command_data[0]][0]
                         Message("Выбери конкурс:", page).line(call.message)
+
+                elif command_data[-1] == "news":
+                    if command_data[:2] == ['back', 'to'] or command_data[0] in ('left', 'right'):
+                        # (back to / {direction}) {page} news
+                        page = news.storage[int(command_data[-2])]
+                        Message("Выбери новость:", page).line(call.message)
+
+                    elif len(command_data) == 1:
+                        # news
+                        page = news.storage[0]
+                        Message("Выбери новость:", page).line(call.message)
 
             if command == 'add':
                 if command_data[0] == 'contest':
@@ -82,6 +92,8 @@ def callback_reception(call: telebot.types.CallbackQuery):
                             except:
                                 message_contest_add_error.line(call.message)
                             else:
+                                for tense, lst in contests.storage.items():
+                                    contests.update(lst, tense)
                                 message_contest_add_success.line(call.message)
                         else:
                             message_no_access.line(call.message)
@@ -95,15 +107,31 @@ def callback_reception(call: telebot.types.CallbackQuery):
                             except:
                                 message_contest_add_error.line(call.message)
                             else:
+                                for tense, lst in contests.storage.items():
+                                    contests.update(lst, tense)
                                 message_contest_add_success.line(call.message)
                         else:
                             message_no_access.line(call.message)
+
+                elif command_data[0] == 'news':
+                    # news confirm {name} {description}
+                    if (operations.get_status(call.message.chat.id) in
+                            ("admin", "editor")):  # Проверка наличия доступа
+                        try:
+                            operations.record_news(*command_data[2:5], call.message.chat.id)
+                        except:
+                            message_news_add_error.line(call.message)
+                        else:
+                            news.update(news.storage)
+                            message_news_add_success.line(call.message)
+                    else:
+                        message_no_access.line(call.message)
 
             if command == 'edit-status':
                 if len(command_data) == 2:
                     # {status} {chat_id}
                     message = Message(f"<b>Подтвердите</b>:\n\n"
-                                      f"<b>Username</b>: <code>" + operations.get_username(command_data[1]).replace('_', '\_') +
+                                      f"<b>Username</b>: <code>" + operations.get_username(command_data[1]) +
                                       "</code>\n"
                                       f"<b>Chat_id</b>: <code>{command_data[1]}</code>\n"
                                       f"<b>Текущий статус</b>: <code>{operations.get_status(command_data[1])}</code>\n"
@@ -143,4 +171,4 @@ if __name__ == '__main__':
     print(f"link: https://t.me/{config.Bot}")
     logger.info(f'{config.Bot} start')
 
-bot.infinity_polling(logger_level=None)  #
+bot.infinity_polling()  # logger_level=None

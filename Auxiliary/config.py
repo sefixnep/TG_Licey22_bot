@@ -13,7 +13,8 @@ contest_indices = ['id', 'name', 'date_start', 'date_end', 'link', 'tags', 'comm
 contest_removal_day = 30 * 6
 
 # News
-news_indices = ['id', 'name', 'comment', 'date']
+page_shape_news = [2, 2]  # размерность матрицы с новостями на каждой странице
+news_indices = ['id', 'name', 'description', 'date', 'author']
 news_removal_day = 1
 
 # Path

@@ -13,21 +13,21 @@ def update(lst: list, tense: str):
 
     if amount_pages == 0:
         lst.append(((button.back_to_contests,),))
-        return None
+        return
 
     def leafing(number: int):
         if amount_pages == 1:
-            return ((button.back_to_contests,),)
+            return (button.back_to_contests,)
         elif amount_pages > 1 and number == 0:
             return ((button.back_to_contests,
                      Button(" >> ", f"right_{tense}_{number + 1}_contests_page")),)
         elif amount_pages > 1 and number == amount_pages - 1:
-            return ((Button(" << ", f"left_{tense}_{number - 1}_contests_page"),
-                     button.back_to_contests,),)
+            return (Button(" << ", f"left_{tense}_{number - 1}_contests_page"),
+                     button.back_to_contests,)
         else:
-            return ((Button(" << ", f"left_{tense}_{number - 1}_contests_page"),
+            return (Button(" << ", f"left_{tense}_{number - 1}_contests_page"),
                      button.back_to_contests,
-                     Button(" >> ", f"right_{tense}_{number + 1}_contests_page")),)
+                     Button(" >> ", f"right_{tense}_{number + 1}_contests_page"))
 
     for page_number in range(amount_pages):
         Button("🔙 Назад 🔙", f'back_to_{tense}_{page_number}_contests_page')
@@ -35,14 +35,14 @@ def update(lst: list, tense: str):
         for i in range(config.page_shape_contests[0]):
             line = tuple()
             for j in range(config.page_shape_contests[1]):
-                count = (page_number * config.page_shape_contests[0] * config.page_shape_contests[1] + i *
-                         config.page_shape_contests[1] + j)
+                count = (page_number * config.page_shape_contests[0] * config.page_shape_contests[1] +
+                         i * config.page_shape_contests[1] + j)
                 if len(contests_tense) == count:  # Если все конкурсы размещены
                     if j:  # Если на строчке есть конкурсы
                         page += (line,)
-                    page += leafing(page_number)
+                    page += (leafing(page_number),)
                     lst.append(page)
-                    return None
+                    return
 
                 contest = contests_tense[count]
                 callback_data = f'contest_{contest[config.contest_indices.index("id")]}'
@@ -64,5 +64,9 @@ def update(lst: list, tense: str):
                 line += (getattr(button, callback_data),)
             page += (line,)
 
-        page += leafing(page_number)
+        page += (leafing(page_number),)
         lst.append(page)
+
+
+for tense, lst in storage.items():
+    update(lst, tense)
