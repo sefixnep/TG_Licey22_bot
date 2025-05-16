@@ -3,7 +3,7 @@ version = "1.0"
 
 # Bot
 Bot = "TG_Licey22_bot"
-BOT_TOKEN = "6365090441:AAEcrGVLXbwC--fyNhL73f_QAluVScxQtj8"
+BOT_TOKEN = "6365090441:AAHxBNZOQM-HBvfSbdlGDarVhpwhA04LbaQ"
 
 length_callback = 10
 
@@ -15,7 +15,7 @@ contest_removal_day = 30 * 6
 # News
 page_shape_news = [2, 2]  # размерность матрицы с новостями на каждой странице
 news_indices = ['id', 'name', 'description', 'date', 'author']
-news_removal_day = 1
+news_removal_day = 2
 
 # Path
 class Paths:

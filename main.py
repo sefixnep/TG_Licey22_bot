@@ -16,7 +16,7 @@ def start(message_tg: telebot.types.Message):
         message = message_block
     else:
         if status != "base":
-            operations.record_user(message_tg.chat.id, message_tg.chat.username, "base")
+            operations.record_user(message_tg.chat.id, message_tg.chat.username, "base") # ! Статус для новых пользователей
         message = message_start
 
     message.line(message_tg)
@@ -171,4 +171,4 @@ if __name__ == '__main__':
     print(f"link: https://t.me/{config.Bot}")
     logger.info(f'{config.Bot} start')
 
-bot.infinity_polling()  # logger_level=None
+bot.infinity_polling(logger_level=None)
