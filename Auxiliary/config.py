@@ -1,9 +1,15 @@
+import os
+from dotenv import load_dotenv
+
+# Загрузка переменных окружения
+load_dotenv()
+
 # Project
 version = "1.0"
 
 # Bot
 Bot = "TG_Licey22_bot"
-BOT_TOKEN = "6365090441:AAHxBNZOQM-HBvfSbdlGDarVhpwhA04LbaQ"
+BOT_TOKEN = os.getenv('BOT_TOKEN')
 
 length_callback = 10
 

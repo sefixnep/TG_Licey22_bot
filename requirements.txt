@@ -1,3 +1,4 @@
 pyTelegramBotAPI
 loguru
 python-dateutil
+python-dotenv
