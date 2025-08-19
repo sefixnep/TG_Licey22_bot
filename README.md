@@ -18,7 +18,7 @@
 
 1. Клонируйте репозиторий:
 ```bash
-git clone [URL репозитория]
+git clone https://github.com/sefixnep/TG_Licey22_bot
 ```
 
 2. Создайте виртуальное окружение и активируйте его:
@@ -45,10 +45,11 @@ pip install -r requirements.txt
 TG_Licey22_bot/
 ├── .idea/
 ├── .git/
-├── Auxiliary/         # Вспомогательные модули
-├── .venv/            # Виртуальное окружение
-├── main.py           # Основной файл бота
-├── requirements.txt  # Зависимости проекта
+├── Auxiliary/                 # Вспомогательные модули
+├── .venv/                     # Виртуальное окружение
+├── main.py                    # Основной файл бота
+├── requirements.txt           # Зависимости проекта
+├── Проектная декларация.docx  # Проектная декларация в рамках ТПП
 └── .gitignore
 ```
 
