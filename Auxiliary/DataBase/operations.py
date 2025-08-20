@@ -102,7 +102,7 @@ def get_contest_author(id: str | int):
 
 def record_contest(name: str, date_start: str, date_end: str, link: str, tags: list, comment: str | None, author: str | int):
     # Преобразование данных в формат, подходящий для SQLite
-    date_start, date_end = (parser.parse(date).strftime('%Y-%m-%d') for date in (date_start, date_end))
+    date_start, date_end = (datetime.strptime(date, '%d.%m.%Y').strftime('%Y-%m-%d') for date in (date_start, date_end))
     assert datetime.strptime(date_start, '%Y-%m-%d') <= datetime.strptime(date_end, '%Y-%m-%d'), \
         "date_start must be before date_end"
 
