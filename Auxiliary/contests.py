@@ -19,15 +19,21 @@ def update(lst: list, tense: str):
         if amount_pages == 1:
             return (button.back_to_contests,)
         elif amount_pages > 1 and number == 0:
-            return ((button.back_to_contests,
-                     Button(" >> ", f"right_{tense}_{number + 1}_contests_page")),)
+            return (
+                button.back_to_contests,
+                Button(" >> ", f"right_{tense}_{number + 1}_contests_page"),
+            )
         elif amount_pages > 1 and number == amount_pages - 1:
-            return (Button(" << ", f"left_{tense}_{number - 1}_contests_page"),
-                     button.back_to_contests,)
+            return (
+                Button(" << ", f"left_{tense}_{number - 1}_contests_page"),
+                button.back_to_contests,
+            )
         else:
-            return (Button(" << ", f"left_{tense}_{number - 1}_contests_page"),
-                     button.back_to_contests,
-                     Button(" >> ", f"right_{tense}_{number + 1}_contests_page"))
+            return (
+                Button(" << ", f"left_{tense}_{number - 1}_contests_page"),
+                button.back_to_contests,
+                Button(" >> ", f"right_{tense}_{number + 1}_contests_page"),
+            )
 
     for page_number in range(amount_pages):
         Button("🔙 Назад 🔙", f'back_to_{tense}_{page_number}_contests_page')
@@ -54,7 +60,7 @@ def update(lst: list, tense: str):
                 Button(contest[config.contest_indices.index('name')], callback_data)
                 Message(f"🆔: <code>{contest[config.contest_indices.index('id')]}</code>\n"
                         f"<b>Конкурс</b>: <code>{contest[config.contest_indices.index('name')]}</code>\n"
-                        f"├ <b>Дата проведения</b>: <code>{' - '.join(dates)}</code>\n"
+                        f"├ <b>Дата регистрации</b>: <code>{' - '.join(dates)}</code>\n"
                         f"└ <b>Предметы</b>: <code>{', '.join(contest[config.contest_indices.index('tags')])}</code>\n" +
                         (f"\n<i>Примечание: {comment}</i>" if comment else ""),
                         ((Button("Перейти", contest[config.contest_indices.index('link')], is_link=True),),
