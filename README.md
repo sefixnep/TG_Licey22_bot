@@ -20,18 +20,19 @@
 1. Клонируйте репозиторий:
 ```bash
 git clone https://github.com/sefixnep/TG_Licey22_bot
+cd TG_Licey22_bot
 ```
 
 2. Создайте виртуальное окружение и активируйте его:
 ```bash
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate  # для Linux/Mac
 .venv\Scripts\activate     # для Windows
 ```
 
 3. Установите зависимости:
 ```bash
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 ## Зависимости
@@ -56,10 +57,14 @@ TG_Licey22_bot/
 
 ## Использование
 
-1. Создайте файл конфигурации с необходимыми настройками
+1. Создайте файл .env с BOT_TOKEN или выполните:
+```bash
+export BOT_TOKEN="..." # для Linux/Mac
+set BOT_TOKEN="..." # для Windows
+```
 2. Запустите бота:
 ```bash
-python main.py
+python3 main.py
 ```
 
 ## Роли пользователей
