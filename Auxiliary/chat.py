@@ -410,7 +410,10 @@ Button("✖️ Отменить ✖️", "cancel_find_author", func=clear_next_s
 Button("✖️ Закрыть ✖️", "close", func=delete_message)
 
 # Messages
-message_contacts = Message("<b>Менеджер</b>: @Nadezda_Sibiri", ((button.close,),), button.contacts)
+message_contacts = Message("<b>Менеджер</b>: @Nadezda_Sibiri\n"
+                           "<b>Автор бота</b>: @sefixnep",
+                           ((button.close,),), 
+                           button.contacts)
 
 # Start
 message_start = Message("<b>ID:</b> <code><ID></code>\n"

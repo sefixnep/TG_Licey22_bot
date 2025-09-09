@@ -14,7 +14,7 @@ BOT_TOKEN = os.getenv('BOT_TOKEN')
 length_callback = 10
 
 # Contests
-page_shape_contests = [2, 2]  # размерность матрицы с конкурсами на каждой странице
+page_shape_contests = [5, 1]  # размерность матрицы с конкурсами на каждой странице
 contest_indices = ['id', 'name', 'date_start', 'date_end', 'link', 'tags', 'comment', 'author']
 contest_removal_day = 30 * 6
 
